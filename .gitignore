@@ -14,3 +14,25 @@ crash.log
 
 # For built boxes
 *.box
+# Files, Folders, security keys, and Binaries to ignore
+
+*.vdi
+.vagrant/
+*console.log
+packer-cache/
+*.pem
+*~$
+*.ova
+output*/
+vagrant.d/
+*.iso
+variables.pkr.hcl
+*.priv
+variables.json
+.DS_Store
+id_rsa
+id_rsa*
+id_rsa.pub
+.Vagrantfile*
+Vagrantfile~
+config.default.yml
