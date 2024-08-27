@@ -1,2 +1,7 @@
-# rharidasu
-Private repo for ITM class work
+# Rajcaharan Haridasu
+
+## Where are you from?
+
+I was born in AP, Inida.
+
+
