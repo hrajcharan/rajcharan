@@ -10,7 +10,7 @@ I was born and brought up in Andhra Pradesh, Inida. Now I am living at 2951 S Ki
 
 ## What was your first computing device?
 
-My first computuing device was a [PlayStation Portable](https://en.wikipedia.org/wiki/PlayStation_Portable "Wikipedia articleb for PSP") (2010).
+My first computuing device was a [PlayStation Portable](https://en.wikipedia.org/wiki/PlayStation_Portable "Wikipedia articleb for PSP") (2011).
 
 ## IT Interests
 
