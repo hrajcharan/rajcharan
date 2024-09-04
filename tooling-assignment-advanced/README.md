@@ -18,7 +18,7 @@ Jammy 22.04 Vagrant Box
 ## Spark Versions
 ![*pyspark*](./images/pyspark.png "Pyspark")
 
-![*pyspark*](./images/spark-shell.png "Pyspark")
+![*spark-shell*](./images/spark-shell.png "spark-shell")
 
 ## R Version
 ![*R version*](./images/R-version.png "R Version")
@@ -27,8 +27,7 @@ Jammy 22.04 Vagrant Box
 ![*python version*](./images/python-version.png "Python Version")
 
 ## Result of Cloning Your Private Repository
-No need to show the clone action -- just the results of the ls command
-Image goes here
+![*repo clone*](./images/private-repo-clone.png "repo clone")
 
 ## Output of vagrant box list command
 ![*Vagrant Box list*](./images/vagrant-box-list.png "Vagrant Box list")
