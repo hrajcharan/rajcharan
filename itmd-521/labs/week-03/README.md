@@ -44,7 +44,7 @@ Make sure the `vagrant@your-initials` is in the screenshot
 
 ### PySpark ScreenShot
 
-Place PySpark screenshot here
+![*pyspark output*](./images/pyspark%20output.png "pyspark output")
 
 ### SBT build Output Screenshot
 
