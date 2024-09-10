@@ -48,11 +48,11 @@ Make sure the `vagrant@your-initials` is in the screenshot
 
 ### SBT build Output Screenshot
 
-Place screenshot here
+![*SBT output*](./images//sbt%20compile;%20sbt%20package.png "SBT output")
 
 ### Spark Scala ScreenShot
 
-Place Scala screenshot here
+![*scala output*](./images//scala%20output.png "scala output")
 
 ## Deliverables
 
