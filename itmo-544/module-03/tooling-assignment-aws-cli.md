@@ -15,11 +15,11 @@ Take two screenshots and add them to this document.
 
 ### Screenshot One
 
-![*aws version*](/itmo-544/module-03/images/aws-version.png "aws version")
+![*aws version*](./images/aws-regions.png "aws version")
 
 ### Screenshot Two
 
-![*aws regions*](/itmo-544/module-03/images/aws-regions.png "aws regions")
+![*aws regions*](./images/aws-regions.png "aws regions")
 
 ## Deliverable
 

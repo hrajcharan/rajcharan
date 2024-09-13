@@ -22,7 +22,7 @@ signup")
 * Take screenshot of the user account ID information after logged in and add it to
 this document
 
-#### Part 1 Screenshot Here
+![*user account id*](./images/user-account-id-information.png "user account id")
 
 ### Part 2
 
@@ -36,15 +36,15 @@ Using the AWS Web Console:
 
 #### Part 2 ScreenShot One
 
-Add screenshot here
+![*ec2 launch*](./images/ec2-intance-launch.png "ec2 launch")
 
 #### Part 2 ScreenShot Two
 
-Add screenshot here
+![*ngnix*](./images/ngnix.png "ngnix")
 
 #### Part 2 ScreenShot Three
 
-Add screenshot here
+![*ec2 terminate*](./images/ec2-instance-terminate.png "ec2 terminate")
 
 ### Deliverable
 
