@@ -15,7 +15,7 @@ Take two screenshots and add them to this document.
 
 ### Screenshot One
 
-![*aws version*](./images/aws-regions.png "aws version")
+![*aws version*](./images/aws-version.png "aws version")
 
 ### Screenshot Two
 
