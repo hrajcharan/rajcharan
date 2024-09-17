@@ -52,7 +52,7 @@ if __name__ == "__main__":
     birthyear INT 
     """
  
-    df_ddl = spark.read.csv(divvy_file, schema=ddl_schema, header=True)
+    df_ddl = spark.read.csv(divvy_file, schema=StructType.fromDDL(ddl_schema), header=True)
 
     df_ddl.printSchema()
     print(f"Row count with DDL schema: {df_ddl.count()}")
