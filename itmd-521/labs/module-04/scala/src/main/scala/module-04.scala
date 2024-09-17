@@ -23,8 +23,9 @@ object DivvyPrintSchema {
       .load(divvyFile)
 
     // Print inferred schema and count
+    println("=== Inferred Schema - scala ===")
     dfInferredSchema.printSchema()
-    println(s"Row count with inferred schema: ${dfInferredSchema.count()}")
+    println(s"Row count (inferred schema): ${dfInferredSchema.count()}\n")
 
     // Define programmatic schema
     val programmaticSchema = StructType(Array(
@@ -50,8 +51,9 @@ object DivvyPrintSchema {
       .load(divvyFile)
 
     // Print programmatic schema and count
+    println("=== Programmatic Schema - scala ===")
     dfProgrammatic.printSchema()
-    println(s"Row count with programmatic schema: ${dfProgrammatic.count()}")
+    println(s"Row count (programmatic schema): ${dfProgrammatic.count()}\n")
 
     // Define DDL schema
     val ddlSchema = """
@@ -77,8 +79,9 @@ object DivvyPrintSchema {
       .load(divvyFile)
 
     // Print DDL schema and count
+    println("=== DDL Schema - scala ===")
     dfDDL.printSchema()
-    println(s"Row count with DDL schema: ${dfDDL.count()}")
+    println(s"Row count (DDL schema): ${dfDDL.count()}\n")
 
     // Stop the Spark session
     spark.stop()
