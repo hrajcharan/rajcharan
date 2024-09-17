@@ -56,27 +56,44 @@ Add the required screenshots here:
 
 ### Screenshot of the printSchema inferred in Python
 
-Screenshot goes here
+![*inferred schema py*](./images/inferred-schema-py.png "inferred schema py")
+
+![*row count inferred schema py*](./images/row-count-infer-py.png "row count inferred schema py")
 
 ### Screenshot of the printSchema programmatically in Python
 
-Screenshot goes here
+![*programmatic schema py*](./images/programmatic-shcema-py.png "programmatic schema py")
+
+![*row count programmatic schema py*](./images/row-count-prog-py.png "row count programmatic schema py")
+
+
 
 ### Screenshot of the printSchema via DDL in Python
 
-Screenshot goes here
+![*ddl schema py*](./images/ddl-schema-py.png "ddl schema py")
+
+![*row count ddl schema py*](./images/row-count-ddl-py.png "row count ddl schema py")
+
 
 ### Screenshot of the printSchema inferred in Scala
 
-Screenshot goes here
+![*inferred schema scala*](./images/inferred-schema-scala.png "inferred schema scala")
+
+![*row count inferred schema scala*](./images/row-count-infer-scala.png "row count inferred schema scala")
+
 
 ### Screenshot of the printSchema programmatically in Scala
 
-Screenshot goes here
+![*programmatic schema scala*](./images/programmatic-schema-scala.png "programmatic schema scala")
+
+![*row count programmatic schema scala*](./images/row-count-prog-scala.png "row count programmatic schema scala")
+
 
 ### Screenshot of the printSchema via DDL in Scala
 
-Screenshot goes here
+![*ddl schema scala*](./images/ddl-schema-scala.png "ddl schema scala")
+
+![*row count ddl schema scala*](./images/row-count-ddl-scala.png "row count ddl schema scala")
 
 ### Deliverable
 
