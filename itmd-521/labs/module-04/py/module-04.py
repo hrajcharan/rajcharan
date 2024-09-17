@@ -15,8 +15,10 @@ if __name__ == "__main__":
     
     df_infer = (spark.read.format("csv").option("header","true").option("inferSchema","true").load(divvy_file))
     
+    print("=== Inferred Schema ===")
     df_infer.printSchema()
-    print(f"Row count with inferred schema: {df_infer.count()}")
+    row_count_inferred = df_infer.count()
+    print(f"Row count (inferred schema): {row_count_inferred}\n")
 
     programmatic_schema = StructType([
     StructField("trip_id", IntegerType(), False),
@@ -34,8 +36,10 @@ if __name__ == "__main__":
    
     df_programmatic = spark.read.csv(divvy_file, schema=programmatic_schema, header=True)
     
+    print("=== Programmatic Schema ===")
     df_programmatic.printSchema()
-    print(f"Row count with programmatic schema: {df_programmatic.count()}")
+    row_count_programmatic = df_programmatic.count()
+    print(f"Row count (programmatic schema): {row_count_programmatic}\n")
 
     ddl_schema = """
     trip_id INT,
@@ -54,7 +58,9 @@ if __name__ == "__main__":
  
     df_ddl = spark.read.csv(divvy_file, schema=ddl_schema, header=True)
 
+    print("=== DDL Schema ===")
     df_ddl.printSchema()
-    print(f"Row count with DDL schema: {df_ddl.count()}")
+    row_count_ddl = df_ddl.count()
+    print(f"Row count (DDL schema): {row_count_ddl}\n")
 
     spark.stop()
