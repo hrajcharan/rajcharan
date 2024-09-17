@@ -1,43 +1,60 @@
-from pyspark.sql.types import *
+import sys 
+
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
+from pyspark.sql.types import *
 
-# define schema for our data
-schema = StructType([
-   StructField("Id", IntegerType(), False),
-   StructField("First", StringType(), False),
-   StructField("Last", StringType(), False),
-   StructField("Url", StringType(), False),
-   StructField("Published", StringType(), False),
-   StructField("Hits", IntegerType(), False),
-   StructField("Campaigns", ArrayType(StringType()), False)])
-
-#create our data
-data = [[1, "Jules", "Damji", "https://tinyurl.1", "1/4/2016", 4535, ["twitter", "LinkedIn"]],
-       [2, "Brooke","Wenig","https://tinyurl.2", "5/5/2018", 8908, ["twitter", "LinkedIn"]],
-       [3, "Denny", "Lee", "https://tinyurl.3","6/7/2019",7659, ["web", "twitter", "FB", "LinkedIn"]],
-       [4, "Tathagata", "Das","https://tinyurl.4", "5/12/2018", 10568, ["twitter", "FB"]],
-       [5, "Matei","Zaharia", "https://tinyurl.5", "5/14/2014", 40578, ["web", "twitter", "FB", "LinkedIn"]],
-       [6, "Reynold", "Xin", "https://tinyurl.6", "3/2/2015", 25568, ["twitter", "LinkedIn"]]
-      ]
-# main program
 if __name__ == "__main__":
-   #create a SparkSession
-   spark = (SparkSession
-       .builder
-       .appName("Example-3_6")
-       .getOrCreate())
-   # create a DataFrame using the schema defined above
-   blogs_df = spark.createDataFrame(data, schema)
-   # show the DataFrame; it should reflect our table above
-   blogs_df.show()
-   print()
-   # print the schema used by Spark to process the DataFrame
-   print(blogs_df.printSchema())
-   # Show columns and expressions
-   blogs_df.select(expr("Hits") * 2).show(2)
-   blogs_df.select(col("Hits") * 2).show(2)
-   blogs_df.select(expr("Hits * 2")).show(2)
-   # show heavy hitters
-   blogs_df.withColumn("Big Hitters", (expr("Hits > 10000"))).show()
-   print(blogs_df.schema)
+    if len(sys.argv) != 2:
+        sys.exit(-1)
+    
+
+    spark = (SparkSession.builder.appName("Divvy Print Schema").getOrCreate())
+
+    divvy_file = sys.argv[1] 
+    
+    df_infer = (spark.read.format("csv").option("header","true").option("inferSchema","true").load(divvy_file))
+    
+    df_infer.printSchema()
+    print(f"Row count with inferred schema: {df_infer.count()}")
+
+    programmatic_schema = StructType([
+    StructField("trip_id", IntegerType(), False),
+    StructField("starttime", TimestampType(), True),
+    StructField("stoptime", TimestampType(), True),
+    StructField("bikeid", IntegerType(), True),
+    StructField("tripduration", IntegerType(), True),
+    StructField("from_station_id", IntegerType(), True),
+    StructField("from_station_name", StringType(), True),
+    StructField("to_station_id", IntegerType(), True),
+    StructField("to_station_name", StringType(), True),
+    StructField("usertype", StringType(), True),
+    StructField("gender", StringType(), True),
+    StructField("birthyear", IntegerType(), True)])
+   
+    df_programmatic = spark.read.csv(divvy_file, schema=programmatic_schema, header=True)
+    
+    df_programmatic.printSchema()
+    print(f"Row count with programmatic schema: {df_programmatic.count()}")
+
+    ddl_schema = """
+    trip_id INT,
+    starttime TIMESTAMP,
+    stoptime TIMESTAMP,
+    bikeid INT,
+    tripduration INT,
+    from_station_id INT,
+    from_station_name STRING,
+    to_station_id INT,
+    to_station_name STRING,
+    usertype STRING,
+    gender STRING,
+    birthyear INT 
+    """
+ 
+    df_ddl = spark.read.csv(divvy_file, schema=ddl_schema, header=True)
+
+    df_ddl.printSchema()
+    print(f"Row count with DDL schema: {df_ddl.count()}")
+
+    spark.stop()

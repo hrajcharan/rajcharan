@@ -1,45 +1,86 @@
-package main.scala.chapter3
-
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.functions.{col, expr}
 
-object Example3_7 {
-  def main(args: Array[String]) {
+object DivvyPrintSchema {
 
-    val spark = SparkSession
-      .builder
-      .appName("Example-3_7")
+  def main(args: Array[String]): Unit = {
+    if (args.length != 1) {
+      System.exit(-1)
+    }
+
+    // Initialize SparkSession
+    val spark = SparkSession.builder
+      .appName("Divvy Print Schema")
       .getOrCreate()
 
-    if (args.length <= 0) {
-      println("usage Example3_7 <file path to blogs.json")
-      System.exit(1)
-    }
-    //get the path to the JSON file
-    val jsonFile = args(0)
-    //define our schema as before
-    val schema = StructType(Array(StructField("Id", IntegerType, false),
-      StructField("First", StringType, false),
-      StructField("Last", StringType, false),
-      StructField("Url", StringType, false),
-      StructField("Published", StringType, false),
-      StructField("Hits", IntegerType, false),
-      StructField("Campaigns", ArrayType(StringType), false)))
+    val divvyFile = args(0)
 
-    //Create a DataFrame by reading from the JSON file a predefined Schema
-    val blogsDF = spark.read.schema(schema).json(jsonFile)
-    //show the DataFrame schema as output
-    blogsDF.show(truncate = false)
-    // print the schemas
-    println(blogsDF.printSchema)
-    println(blogsDF.schema)
-    // Show columns and expressions
-    blogsDF.select(expr("Hits") * 2).show(2)
-    blogsDF.select(col("Hits") * 2).show(2)
-    blogsDF.select(expr("Hits * 2")).show(2)
-   // show heavy hitters
-   blogsDF.withColumn("Big Hitters", (expr("Hits > 10000"))).show()
+    // Reading CSV with inferred schema
+    val dfInferredSchema = spark.read
+      .format("csv")
+      .option("header", "true")
+      .option("inferSchema", "true")
+      .load(divvyFile)
 
+    // Print inferred schema and count
+    dfInferredSchema.printSchema()
+    println(s"Row count with inferred schema: ${dfInferredSchema.count()}")
+
+    // Define programmatic schema
+    val programmaticSchema = StructType(Array(
+      StructField("trip_id", IntegerType, false),
+      StructField("starttime", TimestampType, true),
+      StructField("stoptime", TimestampType, true),
+      StructField("bikeid", IntegerType, true),
+      StructField("tripduration", IntegerType, true),
+      StructField("from_station_id", IntegerType, true),
+      StructField("from_station_name", StringType, true),
+      StructField("to_station_id", IntegerType, true),
+      StructField("to_station_name", StringType, true),
+      StructField("usertype", StringType, true),
+      StructField("gender", StringType, true),
+      StructField("birthyear", IntegerType, true)
+    ))
+
+    // Reading CSV with programmatic schema
+    val dfProgrammatic = spark.read
+      .format("csv")
+      .schema(programmaticSchema)
+      .option("header", "true")
+      .load(divvyFile)
+
+    // Print programmatic schema and count
+    dfProgrammatic.printSchema()
+    println(s"Row count with programmatic schema: ${dfProgrammatic.count()}")
+
+    // Define DDL schema
+    val ddlSchema = """
+      trip_id INT,
+      starttime TIMESTAMP,
+      stoptime TIMESTAMP,
+      bikeid INT,
+      tripduration INT,
+      from_station_id INT,
+      from_station_name STRING,
+      to_station_id INT,
+      to_station_name STRING,
+      usertype STRING,
+      gender STRING,
+      birthyear INT
+    """
+
+    // Reading CSV with DDL schema
+    val dfDDL = spark.read
+      .format("csv")
+      .schema(ddlSchema)
+      .option("header", "true")
+      .load(divvyFile)
+
+    // Print DDL schema and count
+    dfDDL.printSchema()
+    println(s"Row count with DDL schema: ${dfDDL.count()}")
+
+    // Stop the Spark session
+    spark.stop()
   }
 }
