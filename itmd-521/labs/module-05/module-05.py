@@ -14,17 +14,18 @@ if __name__ == "__main__":
     
     sf_fire_df = (spark.read.format("csv").option("header","true").option("inferSchema","true").load(sf_fire))
 
-
-
+      
 #What were all the different types of fire calls in 2018?
 
-fire_calls_2018 = sf_fire_df.filter(year("CallDate") == 2018)
-fire_call_types_2018 = fire_calls_2018.select("CallType").distinct()
-fire_call_types_2018.show(truncate=False)
-
+    fire_calls_2018 = sf_fire_df.filter(year("CallDate") == 2018)
+    fire_call_types_2018 = fire_calls_2018.select("CallType").distinct()
+    fire_call_types_2018.show(truncate=False)
 
 
 #What months within the year 2018 saw the highest number of fire calls?
+
+    fire_calls_by_month = (fire_calls_2018.groupBy(month("CallDate").alias("Month")).agg(count("IncidentNumber").alias("NumFireCalls")).orderBy("NumFireCalls", ascending=False))
+    fire_calls_by_month.show()
 
 
 #Which neighborhood in San Francisco generated the most fire calls in 2018? 
