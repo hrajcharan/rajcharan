@@ -6,6 +6,7 @@ from pyspark.sql.functions import *
 from pyspark.sql.types import *
 from scipy.stats import f_oneway, chi2_contingency
 
+
 def fill_missing_values(df):
     # Fill missing values in numerical columns with the mean of the column
     numerical_cols = [field.name for field in df.schema.fields if isinstance(field.dataType, (IntegerType, DoubleType))]
