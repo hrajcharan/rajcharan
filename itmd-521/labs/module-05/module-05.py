@@ -96,7 +96,7 @@ if __name__ == "__main__":
     current_dir = os.getcwd()
 
     # Define the path for the Parquet file in the current directory
-    arquet_path = os.path.join(current_dir, "fire_calls_2018.parquet")
+    parquet_path = os.path.join(current_dir, "fire_calls_2018.parquet")
 
 
     # Write data to Parquet file
