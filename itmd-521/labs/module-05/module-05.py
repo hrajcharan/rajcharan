@@ -44,6 +44,8 @@ if __name__ == "__main__":
 
 #Which week in the year in 2018 had the most fire calls?
 
+    fire_calls_by_week = (fire_calls_2018.groupBy(weekofyear("CallDate").alias("Week")).agg(count("IncidentNumber").alias("NumFireCalls")).orderBy("NumFireCalls", ascending=False))
+    fire_calls_by_week.show()
 
 #Is there a correlation between neighborhood, zip code, and number of fire calls? 
 
