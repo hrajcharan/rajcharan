@@ -1,4 +1,5 @@
 
+import os
 import sys 
 
 from pyspark.sql import SparkSession
@@ -91,8 +92,15 @@ if __name__ == "__main__":
 
 # 7. How can we use Parquet files or SQL tables to store this data and read it back?
 
+    # Get the current working directory
+    current_dir = os.getcwd()
+
+    # Define the path for the Parquet file in the current directory
+    arquet_path = os.path.join(current_dir, "fire_calls_2018.parquet")
+
+
     # Write data to Parquet file
-    fire_calls_2018.write.parquet("/home/vagrant/fall2024/rharidasu/itmd-521/labs/module-05/fire_calls_2018.parquet")
+    fire_calls_2018.write.parquet(parquet_path)
 
     # Read data back from Parquet
     fire_calls_2018_parquet = spark.read.parquet("/home/vagrant/fall2024/rharidasu/itmd-521/labs/module-05/fire_calls_2018.parquet")
@@ -103,6 +111,12 @@ if __name__ == "__main__":
     result = spark.sql("SELECT Neighborhood, COUNT(*) as NumFireCalls FROM fire_calls_2018 GROUP BY Neighborhood")
     result.show()
 
+    # Remove the Parquet file
+    if os.path.exists(parquet_path):
+        os.remove(parquet_path)
+        print(f"Parquet file {parquet_path} has been removed.")
+    else:
+        print(f"Parquet file {parquet_path} does not exist.")
 
     spark.stop()
     
