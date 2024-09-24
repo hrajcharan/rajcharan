@@ -45,10 +45,12 @@ if __name__ == "__main__":
 #Which week in the year in 2018 had the most fire calls?
 
     fire_calls_by_week = (fire_calls_2018.groupBy(weekofyear("CallDate").alias("Week")).agg(count("IncidentNumber").alias("NumFireCalls")).orderBy("NumFireCalls", ascending=False))
-    fire_calls_by_week.show()
+    fire_calls_by_week.show(1)
 
 #Is there a correlation between neighborhood, zip code, and number of fire calls? 
 
+    fire_calls_by_neighborhood_zip = (fire_calls_2018.groupBy("Neighborhood", "Zipcode").agg(count("IncidentNumber").alias("NumFireCalls")).orderBy("NumFireCalls", ascending=False))
+    fire_calls_by_neighborhood_zip.show()
 
 #How can we use Parquet files or SQL tables to store this data and read it back?
 
