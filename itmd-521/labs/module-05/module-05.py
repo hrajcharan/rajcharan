@@ -3,6 +3,7 @@ import sys
 
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
+from pyspark.sql.types import *
 from scipy.stats import f_oneway, chi2_contingency
 
 def fill_missing_values(df):
