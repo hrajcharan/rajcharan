@@ -12,7 +12,11 @@ if __name__ == "__main__":
 
     sf_fire = sys.argv[1] 
     
-    sf_fire_df = (spark.read.format("csv").option("header","true").option("inferSchema","true").load(sf_fire))
+    sf_fire_df = sf_fire_df.withColumn("CallDate", to_date(firecallsdf["CallDate"], "MM/dd/yyyy")) \
+                             .withColumn("WatchDate", to_date(firecallsdf["WatchDate"], "MM/dd/yyyy")) \
+                             .withColumn("AvailableDtTm", to_timestamp(firecallsdf["AvailableDtTm"], "MM/dd/yyyy hh:mm:ss a"))
+
+    sf_fire_df = spark.read.format("csv").option("header","true").option("inferSchema","true").load(sf_fire)
 
       
 #What were all the different types of fire calls in 2018?
@@ -43,6 +47,7 @@ if __name__ == "__main__":
 
 
 #How can we use Parquet files or SQL tables to store this data and read it back?
+
 
 
     
