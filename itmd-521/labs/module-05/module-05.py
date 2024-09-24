@@ -82,7 +82,23 @@ if __name__ == "__main__":
     print(f"Correlation between Neighborhood and NumberOfCalls: {neigh_calls_corr}")
     print(f"Correlation between Zipcode and NumberOfCalls: {zip_calls_corr}")
     
+    if neigh_calls_corr > zip_calls_corr:
+        print(f"The higher correlation is between Neighborhood and NumberOfCalls: {neigh_calls_corr}")
+    else:
+        print(f"The higher correlation is between Zipcode and NumberOfCalls: {zip_calls_corr}")  
 # How can we use Parquet files or SQL tables to store this data and read it back?
+
+# Write data to Parquet file
+    fire_calls_2018.write.parquet("/home/vagrant/fall2024/rharidasu/itmd-521/labs/module-05/fire_calls_2018.parquet")
+
+# Read data back from Parquet
+    fire_calls_2018_parquet = spark.read.parquet("/home/vagrant/fall2024/rharidasu/itmd-521/labs/module-05/fire_calls_2018.parquet")
+    fire_calls_2018_parquet.show()
+
+# Create a temporary SQL table and query it
+    fire_calls_2018.createOrReplaceTempView("fire_calls_2018")
+    result = spark.sql("SELECT Neighborhood, COUNT(*) as NumFireCalls FROM fire_calls_2018 GROUP BY Neighborhood")
+    result.show()
 
 
     spark.stop()
