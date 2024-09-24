@@ -59,8 +59,8 @@ if __name__ == "__main__":
     .orderBy("NumberOfCalls", ascending=False)
 
 # StringIndexer to encode categorical variables (Neighborhood and Zipcode)
-    neigh_indexer = StringIndexer(inputCol="Neighborhood", outputCol="Neighborhood_index")
-    zip_indexer = StringIndexer(inputCol="Zipcode", outputCol="Zipcode_index")
+    neigh_indexer = StringIndexer(inputCol="Neighborhood", outputCol="Neighborhood_index").setHandleInvalid("skip")
+    zip_indexer = StringIndexer(inputCol="Zipcode", outputCol="Zipcode_index").setHandleInvalid("skip")
 
 # Apply the indexers
     df_with_indices = neigh_indexer.fit(fire_calls_by_neighborhood_zip).transform(fire_calls_by_neighborhood_zip)
