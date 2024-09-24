@@ -16,8 +16,11 @@ def fill_missing_values(df):
     # Fill missing values in categorical columns with the most frequent value
     categorical_cols = [field.name for field in df.schema.fields if isinstance(field.dataType, StringType)]
     for col_name in categorical_cols:
-        most_frequent_value = df.groupBy(col_name).count().orderBy('count', ascending=False).first()[0]
-        df = df.fillna(most_frequent_value, subset=[col_name])
+        most_frequent_row = df.groupBy(col_name).count().orderBy('count', ascending=False).first()
+        if most_frequent_row:
+            most_frequent_value = most_frequent_row[0]
+            df = df.fillna(most_frequent_value, subset=[col_name])
+        
     
     return df
 
