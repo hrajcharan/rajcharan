@@ -3,6 +3,7 @@ import sys
 
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
+from scipy.stats import f_oneway, chi2_contingency
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
@@ -49,8 +50,28 @@ if __name__ == "__main__":
 
 #Is there a correlation between neighborhood, zip code, and number of fire calls? 
 
-    fire_calls_by_neighborhood_zip = (fire_calls_2018.groupBy("Neighborhood", "Zipcode").agg(count("IncidentNumber").alias("NumFireCalls")).orderBy("NumFireCalls", ascending=False))
-    fire_calls_by_neighborhood_zip.show()
+    # Group by Zipcode and count the number of calls
+    zipcode_grouped = fire_calls_2018.groupBy("Zipcode").agg(count("IncidentNumber").alias("NumberOfCalls")).collect()
+    zipcode_groups = [row["NumberOfCalls"] for row in zipcode_grouped]
+    
+    # Perform ANOVA (f_oneway) for Zipcode
+    anova_zipcode = f_oneway(*zipcode_groups)
+    print(f"ANOVA result between Zipcode and NumberOfCalls: F-statistic={anova_zipcode.statistic}, p-value={anova_zipcode.pvalue}")
+
+    # Group by Neighborhood and count the number of calls
+    neighborhood_grouped = fire_calls_2018.groupBy("Neighborhood").agg(count("IncidentNumber").alias("NumberOfCalls")).collect()
+    neighborhood_groups = [row["NumberOfCalls"] for row in neighborhood_grouped]
+
+    # Perform ANOVA (f_oneway) for Neighborhood
+    anova_neighborhood = f_oneway(*neighborhood_groups)
+    print(f"ANOVA result between Neighborhood and NumberOfCalls: F-statistic={anova_neighborhood.statistic}, p-value={anova_neighborhood.pvalue}")
+
+    # Compare the two ANOVA results
+    if anova_zipcode.statistic > anova_neighborhood.statistic:
+        print(f"The correlation between Zipcode and NumberOfCalls is stronger with F-statistic = {anova_zipcode.statistic}.")
+    else:
+        print(f"The correlation between Neighborhood and NumberOfCalls is stronger with F-statistic = {anova_neighborhood.statistic}.")
+
 
 #How can we use Parquet files or SQL tables to store this data and read it back?
 
