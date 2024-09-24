@@ -30,11 +30,11 @@ if __name__ == "__main__":
     fire_calls_by_month = (fire_calls_2018.groupBy(month("CallDate").alias("Month")).agg(count("IncidentNumber").alias("NumFireCalls")).orderBy("NumFireCalls", ascending=False))
     fire_calls_by_month.show()
 
-    spark.stop()
-
 
 #Which neighborhood in San Francisco generated the most fire calls in 2018? 
 
+    fire_calls_by_neighborhood = (fire_calls_2018.groupBy("Neighborhood").agg(count("IncidentNumber").alias("NumFireCalls")).orderBy("NumFireCalls", ascending=False))
+    fire_calls_by_neighborhood.show(1)
 
 #Which neighborhoods had the worst response times to fire calls in 2018? 
 
@@ -48,5 +48,5 @@ if __name__ == "__main__":
 #How can we use Parquet files or SQL tables to store this data and read it back?
 
 
-
+    spark.stop()
     
