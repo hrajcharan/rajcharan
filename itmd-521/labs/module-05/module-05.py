@@ -95,15 +95,14 @@ if __name__ == "__main__":
     # Get the current working directory
     current_dir = os.getcwd()
 
-    # Define the path for the Parquet file in the current directory
-    parquet_path = os.path.join(current_dir, "fire_calls_2018.parquet")
+    # Define the path for the Parquet file directory
+    parquet_dir = os.path.join(current_dir, "fire_calls_2018")
 
+    # Write data to Parquet directory
+    fire_calls_2018.write.mode("overwrite").parquet(parquet_dir)
 
-    # Write data to Parquet file
-    fire_calls_2018.write.parquet(parquet_path)
-
-    # Read data back from Parquet
-    fire_calls_2018_parquet = spark.read.parquet("/home/vagrant/fall2024/rharidasu/itmd-521/labs/module-05/fire_calls_2018.parquet")
+    # Read data back from Parquet directory
+    fire_calls_2018_parquet = spark.read.parquet(parquet_dir)
     fire_calls_2018_parquet.show()
 
     # Create a temporary SQL table and query it
@@ -111,12 +110,12 @@ if __name__ == "__main__":
     result = spark.sql("SELECT Neighborhood, COUNT(*) as NumFireCalls FROM fire_calls_2018 GROUP BY Neighborhood")
     result.show()
 
-    # Remove the Parquet file
-    if os.path.exists(parquet_path):
-        os.remove(parquet_path)
-        print(f"Parquet file {parquet_path} has been removed.")
+    # Remove the Parquet directory
+    if os.path.exists(parquet_dir):
+        shutil.rmtree(parquet_dir)
+        print(f"Parquet directory {parquet_dir} has been removed.")
     else:
-        print(f"Parquet file {parquet_path} does not exist.")
-
+        print(f"Parquet directory {parquet_dir} does not exist.")
+    
     spark.stop()
     
