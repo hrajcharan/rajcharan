@@ -56,7 +56,7 @@ if __name__ == "__main__":
 # 6. Is there a correlation between neighborhood, zip code, and number of fire calls? 
 
     # Group by Neighborhood and Zipcode, and count the number of fire calls
-    fire_calls_by_neighborhood_zip = sf_fire_df.groupBy("Neighborhood", "Zipcode") \
+    fire_calls_by_neighborhood_zipcode = sf_fire_df.groupBy("Neighborhood", "Zipcode") \
     .agg(count("IncidentNumber").alias("NumberOfCalls")) \
     .orderBy("NumberOfCalls", ascending=False)
 
@@ -65,7 +65,7 @@ if __name__ == "__main__":
     zip_indexer = StringIndexer(inputCol="Zipcode", outputCol="Zipcode_index").setHandleInvalid("skip")
 
     # Apply the indexers
-    df_with_indices = neigh_indexer.fit(fire_calls_by_neighborhood_zip).transform(fire_calls_by_neighborhood_zip)
+    df_with_indices = neigh_indexer.fit(fire_calls_by_neighborhood_zipcode).transform(fire_calls_by_neighborhood_zip)
     df_with_indices = zip_indexer.fit(df_with_indices).transform(df_with_indices)
 
     # Prepare the data for correlation calculation using VectorAssembler
