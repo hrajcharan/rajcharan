@@ -12,7 +12,9 @@ if __name__ == "__main__":
 
     sf_fire = sys.argv[1] 
     
-    sf_fire_df = sf_fire_df.withColumn("CallDate", to_date(firecallsdf["CallDate"], "MM/dd/yyyy")).withColumn("WatchDate", to_date(firecallsdf["WatchDate"], "MM/dd/yyyy")).withColumn("AvailableDtTm", to_timestamp(firecallsdf["AvailableDtTm"], "MM/dd/yyyy hh:mm:ss a"))
+    sf_fire_df = sf_fire_df.withColumn("CallDate", to_date(sf_fire_df["CallDate"], "MM/dd/yyyy")) \
+                       .withColumn("WatchDate", to_date(sf_fire_df["WatchDate"], "MM/dd/yyyy")) \
+                       .withColumn("AvailableDtTm", to_timestamp(sf_fire_df["AvailableDtTm"], "MM/dd/yyyy hh:mm:ss a"))
 
     sf_fire_df = spark.read.format("csv").option("header","true").option("inferSchema","true").load(sf_fire)
 
