@@ -38,6 +38,9 @@ if __name__ == "__main__":
 
 #Which neighborhoods had the worst response times to fire calls in 2018? 
 
+    response_time_by_neighborhood = (fire_calls_2018.groupBy("Neighborhood").agg(avg("ResponseDelayedinMins").alias("AvgResponseTime")).orderBy("AvgResponseTime", ascending=False))
+    response_time_by_neighborhood.show(5)
+
 
 #Which week in the year in 2018 had the most fire calls?
 
