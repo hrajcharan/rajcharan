@@ -19,7 +19,7 @@ if __name__ == "__main__":
     
     departure_delays_df = spark.read.format("csv").option("header","true").option("inferSchema","true").load(departure_delays)
 
-    departure_delays_df = departure_delays_df.withColumn("date", F.to_date("date", "yyyyMMdd"))
+    #departure_delays_df = departure_delays_df.withColumn("date", F.to_date("date", "yyyyMMdd"))
 
 #Part I
 
@@ -42,11 +42,10 @@ if __name__ == "__main__":
     departure_delays_df.createOrReplaceTempView("us_delay_flights_tbl")
 
     ord_flights = spark.sql("""
-    SELECT * 
-    FROM us_delay_flights_tbl 
-    WHERE origin = 'ORD' AND month = 3 AND day BETWEEN 1 AND 15
+    CREATE OR REPLACE TEMP VIEW ord_flights AS
+    SELECT * FROM us_delay_flights_tbl
+    WHERE origin = 'ORD' AND date BETWEEN '0301' AND '0315'
     """)
-    ord_flights.createOrReplaceTempView("ord_flights_view")
     ord_flights.show(5)
 
     spark.catalog.listColumns("us_delay_flights_tbl")
