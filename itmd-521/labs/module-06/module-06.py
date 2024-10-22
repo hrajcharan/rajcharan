@@ -17,6 +17,7 @@ if __name__ == "__main__":
 
     departure_delays = sys.argv[1] 
     
+    schema = "`date` STRING, `delay` INT, `distance` INT, `origin` STRING, `destination` STRING"
     departure_delays_df = spark.read.format("csv").option("header","true").option("inferSchema","true").load(departure_delays)
 
     #departure_delays_df = departure_delays_df.withColumn("date", F.to_date("date", "yyyyMMdd"))
@@ -36,6 +37,23 @@ if __name__ == "__main__":
     .orderBy("delay", ascending=False))
     flights_from_sfo_to_ord.show(10)
 
+    flights_with_delays = (departure_delays
+    .select(
+        "delay",
+        "origin",
+        "destination",
+        F.when(departure_delays.delay > 360, 'Very Long Delays')
+         .when((departure_delays.delay > 120) & (departure_delays.delay < 360), 'Long Delays')
+         .when((departure_delays.delay > 60) & (departure_delays.delay < 120), 'Short Delays')
+         .when((departure_delays.delay > 0) & (departure_delays.delay < 60), 'Tolerable Delays')
+         .when(departure_delays.delay == 0, 'No Delays')
+         .otherwise('Early')
+         .alias('Flight_Delays')
+    )
+    .orderBy("origin", "delay", ascending=False)  # Order by origin and delay descending
+)
+
+
 
 #Part II
 
@@ -52,3 +70,6 @@ if __name__ == "__main__":
 
 
 #Part III
+
+
+    spark.stop()
