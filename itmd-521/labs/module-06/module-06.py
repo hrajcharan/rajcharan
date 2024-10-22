@@ -5,6 +5,7 @@ import shutil
 
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
+from pyspark.sql import functions as F
 
 
 
@@ -18,6 +19,7 @@ if __name__ == "__main__":
     
     departure_delays_df = spark.read.format("csv").option("header","true").option("inferSchema","true").load(departure_delays)
 
+    departure_delays_df = departure_delays_df.withColumn("date", F.to_date("date", "yyyyMMdd"))
 
 #Part I
 
