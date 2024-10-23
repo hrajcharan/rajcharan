@@ -59,8 +59,9 @@ if __name__ == "__main__":
 
     spark.sql("SELECT * FROM us_delay_flights_tbl LIMIT 5").show()
 
-    spark.catalog.listColumns("us_delay_flights_tbl")
-
+    columns = spark.catalog.listColumns("us_delay_flights_tbl")
+    for col in columns:
+        print(f"Name: {col.name}, DataType: {col.dataType}, Nullable: {col.nullable}, IsPartition: {col.isPartition}, IsBucket: {col.isBucket}")
 
 #Part III
 
