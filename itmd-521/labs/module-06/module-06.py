@@ -3,7 +3,7 @@ import os
 import sys 
 
 from pyspark.sql import SparkSession 
-from pyspark.sql.functions import col, to_timestamp, date_format
+from pyspark.sql.functions import when, col, to_timestamp, date_format
  
 if __name__ == "__main__":
     if len(sys.argv) != 2:
