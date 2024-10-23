@@ -3,8 +3,8 @@ import os
 import sys 
 import shutil
 
-from pyspark.sql import SparkSession
-from pyspark.sql.functions import *
+from pyspark.sql import SparkSession # type: ignore
+from pyspark.sql.functions import * # type: ignore
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
