@@ -65,5 +65,16 @@ if __name__ == "__main__":
 
 #Part III
 
+    departure_delays_df = departure_delays_df.withColumn("date", date_format(col("date"), "MM-dd HH:mm"))
 
-    spark.stop()
+    departure_delays_df.write.mode("overwrite").json("departuredelays_json")
+
+    departure_delays_df.write.mode("overwrite").json("departuredelays_json_lz4", compression="lz4")
+
+    departure_delays_df.write.mode("overwrite").parquet("departuredelays_parquet")
+
+
+#Part IV
+
+
+spark.stop()
