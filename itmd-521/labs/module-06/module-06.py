@@ -5,9 +5,6 @@ import shutil
 
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
-from pyspark.sql import functions as F
-
-
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
