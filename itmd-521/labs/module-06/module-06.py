@@ -64,9 +64,9 @@ if __name__ == "__main__":
 
 #Part III
 
-    departure_delays_df= departure_delays_df.withColumn("date", to_timestamp(col("date"), "MMddHHmm"))
+    departure_delays_df= departure_delays_df.withColumn("date", to_timestamp("date", "MMddHHmm"))
 
-    departure_delays_df = departure_delays_df.withColumn("date", date_format(col("date"), "MM-dd HH:mm"))
+    departure_delays_df = departure_delays_df.withColumn("date", date_format("date", "MM-dd HH:mm"))
    
     departure_delays_df.write.mode("overwrite").json("departuredelays_json")
 
