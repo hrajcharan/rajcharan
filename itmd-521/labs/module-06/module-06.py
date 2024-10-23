@@ -5,7 +5,7 @@ import shutil
 
 from pyspark.sql import SparkSession # type: ignore
 from pyspark.sql.functions import * # type: ignore
-
+ 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         sys.exit(-1)
@@ -65,8 +65,8 @@ if __name__ == "__main__":
 
 #Part III
 
-    departure_delays_df = departure_delays_df.withColumn("date", date_format(col("date"), "MM-dd HH:mm"))
-
+    departure_delays_df = departure_delays_df.withColumn("date", to_timestamp(col("date"), "MMddHHmm"))   # type: ignore
+    
     departure_delays_df.write.mode("overwrite").json("departuredelays_json")
 
     departure_delays_df.write.mode("overwrite").json("departuredelays_json_lz4", compression="lz4")
