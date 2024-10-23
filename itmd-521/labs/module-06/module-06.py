@@ -3,7 +3,7 @@ import os
 import sys 
 
 from pyspark.sql import SparkSession 
-from pyspark.sql.functions import when, col, date_format
+from pyspark.sql.functions import when, col,to_timestamp, date_format
  
 if __name__ == "__main__":
     if len(sys.argv) != 2:
@@ -64,6 +64,9 @@ if __name__ == "__main__":
 
 #Part III
 
+    
+    departure_delays_df = departure_delays_df.withColumn("date", to_timestamp(col("date"), "MMddHHmm"))
+    
     departure_delays_df = departure_delays_df.withColumn("date", date_format("date", "MM-dd HH:mm"))
    
     departure_delays_df.write.mode("overwrite").json("departuredelays_json")
