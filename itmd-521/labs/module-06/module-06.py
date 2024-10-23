@@ -75,5 +75,13 @@ if __name__ == "__main__":
 
 #Part IV
 
+   
+    departure_delays_df = spark.read.parquet("departuredelays_parquet")
+
+    orddeparturedelays = departure_delays_df.filter(departure_delays_df.origin == 'ORD')
+
+    orddeparturedelays.show(10)
+
+    orddeparturedelays.write.mode("overwrite").parquet("orddeparturedelays_parquet" )
 
 spark.stop()
