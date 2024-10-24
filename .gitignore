@@ -38,6 +38,5 @@ Vagrantfile~
 config.default.yml
 
 *.csv
-*.txt
 *.json
 target/
