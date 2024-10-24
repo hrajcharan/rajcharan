@@ -1,6 +1,6 @@
 ami-085f9c64a9b75eed5
 t2.micro
-itmo544
+itmo-544-2024
 sg-0dddd670614115c9a
 1
 install-env.sh
