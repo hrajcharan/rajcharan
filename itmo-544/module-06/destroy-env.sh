@@ -1,17 +1,13 @@
 #!/bin/bash
 
-
-
 # Find the auto scaling group
-# https://docs.aws.amazon.com/cli/latest/reference/autoscaling/describe-auto-scaling-groups.html
 echo "Retrieving autoscaling group name..."
 ASGNAME=$(aws autoscaling describe-auto-scaling-groups --output=text --query='AutoScalingGroups[*].AutoScalingGroupName')
 echo "*****************************************************************"
 echo "Autoscaling group name: $ASGNAME"
 echo "*****************************************************************"
 
-# Update the auto scaling group to remove the min and max values to zero
-# https://docs.aws.amazon.com/cli/latest/reference/autoscaling/update-auto-scaling-group.html
+# Update the auto scaling group to set minimum and desired capacity to 0
 echo "Updating $ASGNAME autoscaling group to set minimum and desired capacity to 0..."
 aws autoscaling update-auto-scaling-group \
     --auto-scaling-group-name $ASGNAME \
@@ -20,64 +16,70 @@ aws autoscaling update-auto-scaling-group \
     --desired-capacity 0
 echo "$ASGNAME autoscaling group was updated!"
 
-# Collect EC2 instance IDS
-# First Describe EC2 instances
-# https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html
+# Collect EC2 instance IDs
 EC2IDS=$(aws ec2 describe-instances \
     --output=text \
-    --query='Reservations[*].Instances[*].InstanceId' --filter Name=instance-state-name,Values=pending,running  )
+    --query='Reservations[*].Instances[*].InstanceId' \
+    --filter Name=instance-state-name,Values=pending,running)
 
-declare -a IDSARRAY
-IDSARRAY=( $EC2IDS )
-# Add ec2 wait instances IDS terminated
-# https://awscli.amazonaws.com/v2/documentation/api/latest/reference/ec2/wait/instance-terminated.html
-# Now Terminate all EC2 instances
 echo "Waiting for instances..."
 aws ec2 wait instance-terminated --instance-ids $EC2IDS
 echo "Instances are terminated!"
 
-# Delete listeners after deregistering target group
+# Retrieve the Target Group ARN
+TGARN=$(aws elbv2 describe-target-groups --output=text --query='TargetGroups[*].TargetGroupArn')
+echo "Target Group ARN: $TGARN"
+
+# Retrieve Load Balancer and Listener ARN
 ELBARN=$(aws elbv2 describe-load-balancers --output=text --query='LoadBalancers[*].LoadBalancerArn')
-#https://docs.aws.amazon.com/cli/latest/reference/elbv2/describe-listeners.html
-LISTARN=$(aws elbv2 describe-listeners --load-balancer-arn $ELBARN --output=text --query='Listeners[*].ListenerArn' )
-#https://awscli.amazonaws.com/v2/documentation/api/latest/reference/elbv2/delete-listener.html
-aws elbv2 delete-listener --listener-arn $LISTARN
-aws elbv2 delete-target-group --target-group-arn $TGARN
-aws elbv2 wait target-deregistered --target-group-arn $TGARN
+echo "Load Balancer ARN: $ELBARN"
 
+LISTARN=$(aws elbv2 describe-listeners --load-balancer-arn "$ELBARN" --output=text --query='Listeners[*].ListenerArn')
 
-#Dynamically detect your infrastrcuture and destroy it/terminate it
-# SUBNET2B=$(aws ec2 describe-subnets --output=text --query='Subnets[*].SubnetId' --filter "Name=availability-zone,Values=${12}")
-# First Query to get the ELB name using the --query and --filters
-# https://docs.aws.amazon.com/cli/latest/reference/elbv2/describe-listeners.html
-ELBARN=$(aws elbv2 describe-load-balancers --output=text --query='LoadBalancers[*].LoadBalancerArn')
+# Delete the ELB Listener
+echo "Deleting listener with ARN: $LISTARN"
+aws elbv2 delete-listener --listener-arn "$LISTARN"
+
+# Delete the Target Group
+echo "Deleting target group with ARN: $TGARN"
+aws elbv2 delete-target-group --target-group-arn "$TGARN"
+
+# Delete the load balancer
 echo "*****************************************************************"
-echo "Printing ELBARN: $ELBARN"
+echo "Deleting Load Balancer: $ELBARN"
 echo "*****************************************************************"
-
-#Delete loadbalancer
-# https://docs.aws.amazon.com/cli/latest/reference/elbv2/delete-load-balancer.html
 aws elbv2 delete-load-balancer --load-balancer-arn $ELBARN
 aws elbv2 wait load-balancers-deleted --load-balancer-arns $ELBARN
 echo "Load balancers deleted!"
 
 # Delete the auto-scaling group
-# https://docs.aws.amazon.com/cli/latest/reference/autoscaling/delete-auto-scaling-group.html
 echo "Deleting $ASGNAME autoscaling group..."
-aws autoscaling delete-auto-scaling-group \
-    --auto-scaling-group-name $ASGNAME
+aws autoscaling delete-auto-scaling-group --auto-scaling-group-name $ASGNAME
 echo "$ASGNAME autoscaling group was deleted!"
 
-# Find the launch configuration template
-echo "Retrieving launch configuration name..."
-LTNAME=$(aws autoscaling describe-launch-configurations --output=text --query='LaunchConfigurations[*].LaunchConfigurationName')
+# Retrieve and delete the launch template
+LTNAME=$(aws ec2 describe-launch-templates --output=text --query='LaunchTemplates[*].LaunchTemplateName')
 echo "*****************************************************************"
-echo "Launch configuration name: $LTNAME"
+echo "Launch template name: $LTNAME"
 echo "*****************************************************************"
+aws ec2 delete-launch-template --launch-template-name "$LTNAME"
+echo "$LTNAME launch template was deleted!"
 
-# Delete the launch configuration template file
-# https://docs.aws.amazon.com/cli/latest/reference/autoscaling/delete-launch-configuration.html
-echo "Deleting $LTNAME launch configuration..."
-aws autoscaling delete-launch-configuration \
-    --launch-configuration-name $LTNAME
-echo "$LTNAME launch configuration was deleted!"
+# Retrieve and delete RDS subnet group
+RDS_SUBNET_GROUP_NAME=$(aws rds describe-db-subnet-groups --output=text --query='DBSubnetGroups[*].DBSubnetGroupName')
+if [ -n "$RDS_SUBNET_GROUP_NAME" ]; then
+    echo "Deleting RDS subnet group: $RDS_SUBNET_GROUP_NAME..."
+    aws rds delete-db-subnet-group --db-subnet-group-name "$RDS_SUBNET_GROUP_NAME"
+    echo "RDS subnet group deleted!"
+else
+    echo "No RDS subnet groups found to delete."
+fi
+
+# Retrieve and delete RDS instances
+RDSINSTANCES=$(aws rds describe-db-instances --output=text --query='DBInstances[*].DBInstanceIdentifier')
+for DB_INSTANCE in $RDSINSTANCES; do
+    echo "Deleting RDS instance: $DB_INSTANCE..."
+    aws rds delete-db-instance --db-instance-identifier "$DB_INSTANCE" --skip-final-snapshot
+done
+echo "RDS instances deleted!"
+
