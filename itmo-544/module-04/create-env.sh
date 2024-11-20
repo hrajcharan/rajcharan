@@ -51,11 +51,14 @@ echo "Retrieving Instance ID"
 EC2IDS=$(aws ec2 describe-instances \
     --output=text \
     --query='Reservations[*].Instances[*].InstanceId' --filter Name=instance-state-name,Values=pending,running)
+aws ec2 create-tags --resources $EC2IDS --tags Key=Name,Value=${13}
+echo "Tagged EC2 Instances: $EC2IDS"
 
 echo "Waiting for instances..."
 #https://docs.aws.amazon.com/cli/latest/reference/ec2/wait/instance-running.html
 aws ec2 wait instance-running --instance-ids $EC2IDS
 echo "Instances are up!"
+
 
 # Find the VPC
 # Note: the way I did it, I added a new argument on the arguments.txt file for VPC ID
@@ -98,9 +101,8 @@ do
 done
 
 # GO to the elbv2 describe-load-balancers
-# find DNS URL in the return object - and print the URL to the screen
+# print the URL to the screen
 
-
-DNSNAME=$(aws elbv2 describe-load-balancers --output=text --query='LoadBalancers[*].DNSName')
-DNSNAME="http://$DNSNAME"
-echo "DNS URL: $DNSName"
+echo "Printing DNS name of the load balancer..."
+DNSNAME=$(aws elbv2 describe-load-balancers --names ${8} --output=text --query='LoadBalancers[*].DNSName')
+echo "DNS URL: http://$DNSNAME"
