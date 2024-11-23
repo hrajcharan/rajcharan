@@ -10,10 +10,9 @@ dc-tg
 us-east-2a
 us-east-2b
 us-east-2c
-module-06
+module-05
 dc-arg
 dc-lt
 2
 5
 3
-dc-rds

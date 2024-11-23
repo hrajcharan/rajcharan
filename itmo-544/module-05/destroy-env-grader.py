@@ -1,11 +1,10 @@
 import boto3
 from tqdm import tqdm
 
-# Initialize boto3 clients for EC2, ELB, Auto Scaling, and RDS
+# Initialize boto3 clients for EC2, ELB, and Auto Scaling
 clientEC2 = boto3.client('ec2')
 clientELB = boto3.client('elbv2')
 clientASG = boto3.client('autoscaling')
-clientRDS = boto3.client('rds')
 
 grandtotal = 0
 totalPoints = 5
@@ -78,22 +77,22 @@ def check_ec2_instances():
         print(f"Error checking EC2 instances: {e}")
         return False
 
-# Check for the existence of zero RDS instances
-def check_rds_instances():
+# Check for the existence of zero Target Groups
+def check_target_groups():
     try:
-        response = clientRDS.describe_db_instances()
-        if not response['DBInstances']:
-            print("No RDS instances exist.")
+        response = clientELB.describe_target_groups()
+        if not response['TargetGroups']:
+            print("No Target Groups exist.")
             return True
         else:
-            print(f"RDS instances exist: {len(response['DBInstances'])}")
+            print(f"Target Groups exist: {len(response['TargetGroups'])}")
             return False
     except Exception as e:
-        print(f"Error checking RDS instances: {e}")
+        print(f"Error checking Target Groups: {e}")
         return False
 
 # Read the arguments from the file 'arguments.txt'
-args = read_arguments('arguments06.txt')
+args = read_arguments('arguments.txt')
 
 # Begin Grading Process
 
@@ -117,12 +116,10 @@ if check_ec2_instances():
     grandtotal += 1
 currentPoints()
 
-# Test 5: Check RDS instances
-if check_rds_instances():
+# Test 5: Check Target Groups
+if check_target_groups():
     grandtotal += 1
 currentPoints()
 
 # Final Score
 print(f"Final Score: {grandtotal} out of {totalPoints}")
-
-
