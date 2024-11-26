@@ -1,7 +1,7 @@
 ami-085f9c64a9b75eed5
-t3.micro
-itmo544
-sg-09d60f7a9b63bf7ab
+t2.micro
+itmo-544-2024
+sg-0dddd670614115c9a
 1
 install-env.sh
 us-east2a

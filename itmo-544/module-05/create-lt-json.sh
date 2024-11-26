@@ -46,12 +46,12 @@ JSON="{
             \"Groups\": [
                 \"${4}\"
             ],
-            \"SubnetId\": \"$SUBNET2A\", 
+            \"SubnetId\": \"$SUBNET2A\",
             \"DeleteOnTermination\": true
         }
     ],
     \"ImageId\": \"${1}\",
-    
+
     \"InstanceType\": \"${2}\",
     \"KeyName\": \"${3}\",
     \"UserData\": \"$BASECONVERT\",
