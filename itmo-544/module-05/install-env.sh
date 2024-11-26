@@ -5,6 +5,3 @@
 sudo apt update
 sudo apt install -y nginx
 
-# Enable Nginx
-sudo systemctl start nginx
-sudo systemctl enable nginx
