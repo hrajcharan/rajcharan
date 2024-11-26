@@ -9,7 +9,7 @@ if [ -e $ltconfigfile ]; then
 fi
 
 # Check if arguments.txt exists and has content
-if [ ! -s ~/arguments.txt ]; then
+if [ !$# = 0 ]; then
   echo "You don't have enough variables in your arguments.txt. Perhaps you forgot to run: bash ./create-lt-json.sh \$(< /fall2024/rharidasu/itmo-544/module-05/arguments.txt)"
   exit 1
 fi
