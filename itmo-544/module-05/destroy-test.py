@@ -92,7 +92,7 @@ def check_target_groups():
         return False
 
 # Read the arguments from the file 'arguments.txt'
-args = read_arguments('arguments.txt')
+args = read_arguments('arguments05.txt')
 
 # Begin Grading Process
 

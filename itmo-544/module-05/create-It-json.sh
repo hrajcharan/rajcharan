@@ -51,7 +51,7 @@ JSON="{
         }
     ],
     \"ImageId\": \"${1}\",
-
+    
     \"InstanceType\": \"${2}\",
     \"KeyName\": \"${3}\",
     \"UserData\": \"$BASECONVERT\",
