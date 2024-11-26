@@ -23,7 +23,8 @@ else
   fi
 
   # Base64 conversion of user-data script
-  BASECONVERT=$(base64 -w 0 < "${6}")
+  BASECONVERT=$(base64 -w 0 < /home/vagrant/fall2024/rharidasu/itmo-544/module-05/install-env.sh)
+  #BASECONVERT=$(base64 -w 0 < "${6}")
   if [ -z "$BASECONVERT" ]; then
     echo "Error: Failed to convert ${6} to Base64. Ensure the file exists and is accessible."
     exit 1
