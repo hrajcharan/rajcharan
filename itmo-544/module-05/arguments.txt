@@ -1,5 +1,5 @@
 ami-085f9c64a9b75eed5
-t3.micro
+t2.micro
 itmo544
 sg-09d60f7a9b63bf7ab
 1
