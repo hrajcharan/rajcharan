@@ -2,67 +2,46 @@
 
 ltconfigfile="./config.json"
 
-if [ -a $ltconfigfile ]
-then
-  echo "You have already created the launch-tempalte-data file ./config.json..."
+# Check if config.json already exists
+if [ -e $ltconfigfile ]; then
+  echo "You have already created the launch-template-data file ./config.json..."
   exit 1
-elif [ $# = 0 ]
-  then
-  echo "You don't have enough variables in your arugments.txt, perhaps you forgot to run: bash ./create-lt-json.sh \$(< ~/arguments.txt)"
+fi
+
+# Check if arguments.txt exists and has content
+if [ ! -s ~/arguments.txt ]; then
+  echo "You don't have enough variables in your arguments.txt. Perhaps you forgot to run: bash ./create-lt-json.sh \$(< /fall2024/rharidasu/itmo-544/module-05/arguments.txt)"
   exit 1
-else
-echo 'Creating lauch template data file ./config.json...'
+fi
+
+echo "Creating launch template data file ./config.json..."
 
 echo "Finding and storing the subnet IDs for defined in arguments.txt Availability Zone 1 and 2..."
 SUBNET2A=$(aws ec2 describe-subnets --output=text --query='Subnets[*].SubnetId' --filter "Name=availability-zone,Values=${10}")
 SUBNET2B=$(aws ec2 describe-subnets --output=text --query='Subnets[*].SubnetId' --filter "Name=availability-zone,Values=${11}")
-echo $SUBNET2A
-echo $SUBNET2B
+echo "Subnet 1: $SUBNET2A"
+echo "Subnet 2: $SUBNET2B"
 
-# Create Launch Template
-# Now under EC2 not auto-scaling groups
-# https://awscli.amazonaws.com/v2/documentation/api/latest/reference/ec2/create-launch-template.html
-# Need to convert the user-data file to a base64 string
-# https://en.wikipedia.org/wiki/Base64
-# https://stackoverflow.com/questions/38578528/base64-encoding-new-line
-# base64 will line wrap after 76 characters -- causing the aws ec2 create-launch-template to break
-# the -w 0 options will stop the line break from happening in the base64 output
-
+# Encode user data to base64
 BASECONVERT=$(base64 -w 0 < ${6})
 
-# This is the JSON object that is passed to the create template in a more readable form
-# We will save it to a variable here named JSON
-# Then write it out to a file -- and then attach it to the --launch-template-data option
-# Otherwise we are running into issues with the dynamic bash variables
-# Add BlockDeviceMappings for adding additional EBS store to each EC2 instance
-# Add IAM profile to EC2 instances to allow S3 communication
-# https://awscli.amazonaws.com/v2/documentation/api/latest/reference/ec2/create-launch-template.html#examples
-
-JSON="{
-    \"NetworkInterfaces\": [
+# Generate JSON using jq
+JSON=$(jq -n --arg group "$4" --arg subnet "$SUBNET2A" --arg image "$1" --arg type "$2" --arg key "$3" --arg data "$BASECONVERT" --arg zone "$10" '{
+    NetworkInterfaces: [
         {
-            \"DeviceIndex\": 0,
-            \"AssociatePublicIpAddress\": true,
-            \"Groups\": [
-                \"${4}\"
-            ],
-            \"SubnetId\": \"$SUBNET2A\",
-            \"DeleteOnTermination\": true
+            DeviceIndex: 0,
+            AssociatePublicIpAddress: true,
+            Groups: [$group],
+            SubnetId: $subnet,
+            DeleteOnTermination: true
         }
     ],
-    \"ImageId\": \"${1}\",
+    ImageId: $image,
+    InstanceType: $type,
+    KeyName: $key,
+    UserData: $data,
+    Placement: { AvailabilityZone: $zone }
+}')
 
-    \"InstanceType\": \"${2}\",
-    \"KeyName\": \"${3}\",
-    \"UserData\": \"$BASECONVERT\",
-    \"Placement\": {
-        \"AvailabilityZone\": \"${10}\"
-    }
-}"
-
-#,\"TagSpecifications\":[{\"ResourceType\":\"instance\",\"Tags\":[{\"Key\":\"module\",\"Value\": \"${7}\" }]}]
-# Redirecting the content of our JSON to a file
-echo $JSON > ./config.json
-
-# End of main IF
-fi
+echo "$JSON" > ./config.json
+echo "Launch template data file created at ./config.json"
