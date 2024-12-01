@@ -12,8 +12,9 @@ else
   echo 'Creating launch template data file ./config.json...'
 
   echo "Finding and storing the subnet IDs for Availability Zone 1 and 2..."
-  SUBNET2A=$(aws ec2 describe-subnets --output=text --query='Subnets[*].SubnetId' --filter "Name=availability-zone,Values=${10}")
-  SUBNET2B=$(aws ec2 describe-subnets --output=text --query='Subnets[*].SubnetId' --filter "Name=availability-zone,Values=${11}")
+  
+  SUBNET2A=$(aws ec2 describe-subnets --output=text --query='Subnets[*].SubnetId' --filter "Name=availability-zone,Values=${10}" | tr -d '\n\r')
+  SUBNET2B=$(aws ec2 describe-subnets --output=text --query='Subnets[*].SubnetId' --filter "Name=availability-zone,Values=${11}" | tr -d '\n\r')
   echo "Subnet for AZ 1: $SUBNET2A"
   echo "Subnet for AZ 2: $SUBNET2B"
 
@@ -23,12 +24,18 @@ else
   fi
 
   # Base64 conversion of user-data script
-  BASECONVERT=$(base64 -w 0 < /home/vagrant/fall2024/rharidasu/itmo-544/module-05/install-env.sh)
-  #BASECONVERT=$(base64 -w 0 < "${6}")
+  BASECONVERT=$(base64 -w 0 < "${6}" | tr -d '\n\r')
   if [ -z "$BASECONVERT" ]; then
     echo "Error: Failed to convert ${6} to Base64. Ensure the file exists and is accessible."
     exit 1
   fi
+
+  # Trim all other input variables to avoid issues
+  IMAGE_ID=$(echo "${1}" | tr -d '\n\r')
+  INSTANCE_TYPE=$(echo "${2}" | tr -d '\n\r')
+  KEY_NAME=$(echo "${3}" | tr -d '\n\r')
+  SECURITY_GROUP=$(echo "${4}" | tr -d '\n\r')
+  AVAILABILITY_ZONE=$(echo "${10}" | tr -d '\n\r')
 
   # Create JSON configuration
   JSON="{
@@ -37,18 +44,18 @@ else
             \"DeviceIndex\": 0,
             \"AssociatePublicIpAddress\": true,
             \"Groups\": [
-                \"${4}\"
+                \"$SECURITY_GROUP\"
             ],
             \"SubnetId\": \"$SUBNET2A\",
             \"DeleteOnTermination\": true
         }
     ],
-    \"ImageId\": \"${1}\",
-    \"InstanceType\": \"${2}\",
-    \"KeyName\": \"${3}\",
+    \"ImageId\": \"$IMAGE_ID\",
+    \"InstanceType\": \"$INSTANCE_TYPE\",
+    \"KeyName\": \"$KEY_NAME\",
     \"UserData\": \"$BASECONVERT\",
     \"Placement\": {
-        \"AvailabilityZone\": \"${10}\"
+        \"AvailabilityZone\": \"$AVAILABILITY_ZONE\"
     }
   }"
 
