@@ -93,7 +93,7 @@ def check_rds_instances():
         return False
 
 # Read the arguments from the file 'arguments.txt'
-args = read_arguments('arguments06.txt')
+args = read_arguments('arguments.txt')
 
 # Begin Grading Process
 
