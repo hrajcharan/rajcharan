@@ -84,4 +84,83 @@ MYVPCID=$(aws ec2 describe-vpcs --output=text --query='Vpcs[*].VpcId')
 echo "VPC ID: $MYVPCID"
 
 echo "Creating target group '${TARGET_GROUP_NAME}'..."
-aws elbv2 crea
+aws elbv2 create-target-group \
+    --name ${TARGET_GROUP_NAME} \
+    --protocol HTTP \
+    --port 80 \
+    --target-type instance \
+    --vpc-id $MYVPCID
+
+TGARN=$(aws elbv2 describe-target-groups --names ${TARGET_GROUP_NAME} --output=text --query='TargetGroups[*].TargetGroupArn')
+echo "Target group ARN: $TGARN"
+
+echo "Creating elbv2 listener..."
+aws elbv2 create-listener --load-balancer-arn $ELBARN --protocol HTTP --port 80 --default-actions Type=forward,TargetGroupArn=$TGARN
+echo "Created elbv2 listener."
+
+echo "Creating auto-scaling group '${ASG_NAME}'..."
+aws autoscaling create-auto-scaling-group \
+    --auto-scaling-group-name ${ASG_NAME} \
+    --launch-template LaunchTemplateName=${LAUNCH_TEMPLATE_NAME} \
+    --target-group-arns $TGARN \
+    --health-check-type ELB \
+    --health-check-grace-period 120 \
+    --min-size ${ASG_MIN_SIZE} \
+    --max-size ${ASG_MAX_SIZE} \
+    --desired-capacity ${ASG_DESIRED_CAPACITY} \
+    --tags Key=Name,Value="${TAG_VALUE}"
+
+# Tag EC2 Instances
+echo "Tagging EC2 instances with '${TAG_VALUE}'..."
+EC2IDS=$(aws ec2 describe-instances \
+    --filters "Name=instance-state-name,Values=pending,running" \
+    --output=text \
+    --query='Reservations[*].Instances[*].InstanceId')
+
+if [ "$EC2IDS" != "" ]; then
+    aws ec2 create-tags --resources $EC2IDS --tags Key=Name,Value=${TAG_VALUE}
+    echo "Tagged EC2 Instances: $EC2IDS"
+else
+    echo "No EC2 instances found to tag."
+fi
+
+# Wait for instances to be running
+if [ "$EC2IDS" != "" ]; then
+    echo "Waiting for EC2 instances to be in running state..."
+    aws ec2 wait instance-running --instance-ids $EC2IDS
+    echo "Instances are up and running!"
+else
+    echo "No EC2 instances found to wait for."
+fi
+
+# Create RDS subnet group
+echo "Creating RDS subnet group..."
+aws rds create-db-subnet-group \
+    --db-subnet-group-name ${RDS_DB_NAME}-subnet-group \
+    --db-subnet-group-description "Subnet group for ${RDS_DB_NAME}" \
+    --subnet-ids $SUBNET2A $SUBNET2B $SUBNET2C \
+    --tags Key=Name,Value=${TAG_VALUE}
+echo "Created RDS subnet group '${RDS_DB_NAME}-subnet-group'."
+
+# Create RDS instance
+echo "Creating RDS primary instance '${RDS_DB_NAME}'..."
+aws rds create-db-instance \
+    --db-instance-identifier "${RDS_DB_NAME}" \
+    --db-instance-class db.t3.micro \
+    --engine mysql \
+    --allocated-storage 20 \
+    --db-subnet-group-name ${RDS_DB_NAME}-subnet-group \
+    --vpc-security-group-ids ${SECURITY_GROUPS} \
+    --master-username controller \
+    --manage-master-user-password \
+    --tags Key=Name,Value=${TAG_VALUE}
+echo "Created RDS primary instance '${RDS_DB_NAME}'."
+
+# Wait for the primary RDS instance to be available
+echo "Waiting for RDS instance '${RDS_DB_NAME}' to become available..."
+aws rds wait db-instance-available --db-instance-identifier "${RDS_DB_NAME}"
+echo "RDS primary instance '${RDS_DB_NAME}' is now available."
+
+echo "Printing DNS name of the load balancer..."
+DNSNAME=$(aws elbv2 describe-load-balancers --names ${ELB_NAME} --output=text --query='LoadBalancers[*].DNSName')
+echo "DNS URL: http://$DNSNAME"
