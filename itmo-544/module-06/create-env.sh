@@ -22,6 +22,29 @@
 # ${18} asg desired
 # ${19} rds database name
 
+
+# Trim all input variables
+image_id=$(trim "${1}")
+instance_type=$(trim "${2}")
+key_name=$(trim "${3}")
+security_group_ids=$(trim "${4}")
+count=$(trim "${5}")
+user_data_file=$(trim "${6}")
+availability_zone=$(trim "${7}")
+elb_name=$(trim "${8}")
+target_group_name=$(trim "${9}")
+subnet_az_a=$(trim "${10}")
+subnet_az_b=$(trim "${11}")
+subnet_az_c=$(trim "${12}")
+tag_value=$(trim "${13}")
+asg_name=$(trim "${14}")
+launch_template_name=$(trim "${15}")
+asg_min=$(trim "${16}")
+asg_max=$(trim "${17}")
+asg_desired=$(trim "${18}")
+rds_db_name=$(trim "${19}")
+
+
 echo "Finding and storing the subnet IDs for the defined Availability Zones..."
 SUBNET2A=$(aws ec2 describe-subnets --output=text --query='Subnets[*].SubnetId' --filter "Name=availability-zone,Values=${10}")
 SUBNET2B=$(aws ec2 describe-subnets --output=text --query='Subnets[*].SubnetId' --filter "Name=availability-zone,Values=${11}")
