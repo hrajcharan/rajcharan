@@ -121,6 +121,7 @@ else
 fi
 
 # Get the DNS name of the load balancer
+echo "Printing DNS name of the load balancer..."
 DNSNAME=$(aws elbv2 describe-load-balancers --names ${8} --output=text --query='LoadBalancers[*].DNSName')
 DNSNAME="http://$DNSNAME"
 echo "DNS URL: $DNSNAME"
