@@ -22,37 +22,56 @@
 # ${18} asg desired
 # ${19} rds database name
 
+# Remove newline and carriage return characters from input variables
+IMAGE_ID=$(echo "${1}" | tr -d '\n\r')
+INSTANCE_TYPE=$(echo "${2}" | tr -d '\n\r')
+KEY_NAME=$(echo "${3}" | tr -d '\n\r')
+SECURITY_GROUPS=$(echo "${4}" | tr -d '\n\r')
+COUNT=$(echo "${5}" | tr -d '\n\r')
+USER_DATA_FILE=$(echo "${6}" | tr -d '\n\r')
+AVAILABILITY_ZONE=$(echo "${7}" | tr -d '\n\r')
+ELB_NAME=$(echo "${8}" | tr -d '\n\r')
+TARGET_GROUP_NAME=$(echo "${9}" | tr -d '\n\r')
+AZ1=$(echo "${10}" | tr -d '\n\r')
+AZ2=$(echo "${11}" | tr -d '\n\r')
+AZ3=$(echo "${12}" | tr -d '\n\r')
+TAG_VALUE=$(echo "${13}" | tr -d '\n\r')
+ASG_NAME=$(echo "${14}" | tr -d '\n\r')
+LAUNCH_TEMPLATE_NAME=$(echo "${15}" | tr -d '\n\r')
+ASG_MIN_SIZE=$(echo "${16}" | tr -d '\n\r')
+ASG_MAX_SIZE=$(echo "${17}" | tr -d '\n\r')
+ASG_DESIRED_CAPACITY=$(echo "${18}" | tr -d '\n\r')
+RDS_DB_NAME=$(echo "${19}" | tr -d '\n\r')
 
-
+# Finding and storing the subnet IDs for the defined Availability Zones...
 echo "Finding and storing the subnet IDs for the defined Availability Zones..."
-SUBNET2A=$(aws ec2 describe-subnets --output=text --query='Subnets[*].SubnetId' --filter "Name=availability-zone,Values=${10}")
-SUBNET2B=$(aws ec2 describe-subnets --output=text --query='Subnets[*].SubnetId' --filter "Name=availability-zone,Values=${11}")
-SUBNET2C=$(aws ec2 describe-subnets --output=text --query='Subnets[*].SubnetId' --filter "Name=availability-zone,Values=${12}")
+SUBNET2A=$(aws ec2 describe-subnets --output=text --query='Subnets[*].SubnetId' --filter "Name=availability-zone,Values=${AZ1}")
+SUBNET2B=$(aws ec2 describe-subnets --output=text --query='Subnets[*].SubnetId' --filter "Name=availability-zone,Values=${AZ2}")
+SUBNET2C=$(aws ec2 describe-subnets --output=text --query='Subnets[*].SubnetId' --filter "Name=availability-zone,Values=${AZ3}")
 echo "Subnets found: $SUBNET2A, $SUBNET2B, $SUBNET2C"
 
-
 # Check if launch template already exists
-TEMPLATE_EXISTS=$(aws ec2 describe-launch-templates --query "LaunchTemplates[?LaunchTemplateName=='${15}'].LaunchTemplateName" --output text)
+TEMPLATE_EXISTS=$(aws ec2 describe-launch-templates --query "LaunchTemplates[?LaunchTemplateName=='${LAUNCH_TEMPLATE_NAME}'].LaunchTemplateName" --output text)
 
-if [ "$TEMPLATE_EXISTS" == "${15}" ]; then
-    echo "Launch template '${15}' already exists. Skipping creation."
+if [ "$TEMPLATE_EXISTS" == "${LAUNCH_TEMPLATE_NAME}" ]; then
+    echo "Launch template '${LAUNCH_TEMPLATE_NAME}' already exists. Skipping creation."
 else
     # Create launch template
-    echo "Creating launch template '${15}'..."
+    echo "Creating launch template '${LAUNCH_TEMPLATE_NAME}'..."
     aws ec2 create-launch-template \
-        --launch-template-name ${15} \
+        --launch-template-name ${LAUNCH_TEMPLATE_NAME} \
         --version-description version1 \
         --launch-template-data file://config.json
 fi
 
-echo "Creating load balancer '${8}'..."
+echo "Creating load balancer '${ELB_NAME}'..."
 aws elbv2 create-load-balancer \
-    --name ${8} \
+    --name ${ELB_NAME} \
     --subnets $SUBNET2A $SUBNET2B $SUBNET2C \
-    --security-groups ${4} \
-    --tags Key=Name,Value="${13}"
+    --security-groups ${SECURITY_GROUPS} \
+    --tags Key=Name,Value="${TAG_VALUE}"
 
-ELBARN=$(aws elbv2 describe-load-balancers --names ${8} --output=text --query='LoadBalancers[*].LoadBalancerArn')
+ELBARN=$(aws elbv2 describe-load-balancers --names ${ELB_NAME} --output=text --query='LoadBalancers[*].LoadBalancerArn')
 echo "*****************************************************************"
 echo "Printing ELB ARN: $ELBARN"
 echo "*****************************************************************"
@@ -64,85 +83,5 @@ echo "ELB is now available."
 MYVPCID=$(aws ec2 describe-vpcs --output=text --query='Vpcs[*].VpcId')
 echo "VPC ID: $MYVPCID"
 
-echo "Creating target group '${9}'..."
-aws elbv2 create-target-group \
-    --name ${9} \
-    --protocol HTTP \
-    --port 80 \
-    --target-type instance \
-    --vpc-id $MYVPCID
-
-TGARN=$(aws elbv2 describe-target-groups --names ${9} --output=text --query='TargetGroups[*].TargetGroupArn')
-echo "Target group ARN: $TGARN"
-
-echo "Creating elbv2 listener..."
-aws elbv2 create-listener --load-balancer-arn $ELBARN --protocol HTTP --port 80 --default-actions Type=forward,TargetGroupArn=$TGARN
-echo "Created elbv2 listener."
-
-echo "Creating auto-scaling group '${14}'..."
-aws autoscaling create-auto-scaling-group \
-    --auto-scaling-group-name ${14} \
-    --launch-template LaunchTemplateName=${15} \
-    --target-group-arns $TGARN \
-    --health-check-type ELB \
-    --health-check-grace-period 120 \
-    --min-size ${16} \
-    --max-size ${17} \
-    --desired-capacity ${18} \
-    --tags Key=Name,Value="${13}"
-
-# Tag EC2 Instances
-echo "Tagging EC2 instances with '${13}'..."
-EC2IDS=$(aws ec2 describe-instances \
-    --filters "Name=instance-state-name,Values=pending,running" \
-    --output=text \
-    --query='Reservations[*].Instances[*].InstanceId')
-
-if [ "$EC2IDS" != "" ]; then
-    aws ec2 create-tags --resources $EC2IDS --tags Key=Name,Value=${13}
-    echo "Tagged EC2 Instances: $EC2IDS"
-else
-    echo "No EC2 instances found to tag."
-fi
-
-# Wait for instances to be running
-if [ "$EC2IDS" != "" ]; then
-    echo "Waiting for EC2 instances to be in running state..."
-    aws ec2 wait instance-running --instance-ids $EC2IDS
-    echo "Instances are up and running!"
-else
-    echo "No EC2 instances found to wait for."
-fi
-
-# Create RDS subnet group
-echo "Creating RDS subnet group..."
-aws rds create-db-subnet-group \
-    --db-subnet-group-name ${19}-subnet-group \
-    --db-subnet-group-description "Subnet group for ${19}" \
-    --subnet-ids $SUBNET2A $SUBNET2B $SUBNET2C \
-    --tags Key=Name,Value=${13}
-echo "Created RDS subnet group '${19}-subnet-group'."
-
-# Create RDS instance
-echo "Creating RDS primary instance '${19}'..."
-aws rds create-db-instance \
-    --db-instance-identifier "${19}" \
-    --db-instance-class db.t3.micro \
-    --engine mysql \
-    --allocated-storage 20 \
-    --db-subnet-group-name ${19}-subnet-group \
-    --vpc-security-group-ids ${4} \
-    --master-username controller \
-    --manage-master-user-password \
-    --tags Key=Name,Value=${13}
-echo "Created RDS primary instance '${19}'."
-
-# Wait for the primary RDS instance to be available
-echo "Waiting for RDS instance '${19}' to become available..."
-aws rds wait db-instance-available --db-instance-identifier "${19}"
-echo "RDS primary instance '${19}' is now available."
-
-
-echo "Printing DNS name of the load balancer..."
-DNSNAME=$(aws elbv2 describe-load-balancers --names ${8} --output=text --query='LoadBalancers[*].DNSName')
-echo "DNS URL: http://$DNSNAME"
+echo "Creating target group '${TARGET_GROUP_NAME}'..."
+aws elbv2 crea
