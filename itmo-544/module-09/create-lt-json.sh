@@ -16,7 +16,7 @@ else
   INSTANCE_TYPE=$(echo "${2}" | xargs)
   KEY_NAME=$(echo "${3}" | xargs)
   SECURITY_GROUPS=$(echo "${4}" | xargs)
-  USER_DATA_FILE=$(echo "${6}" | xargs)
+  #USER_DATA_FILE=$(echo "${6}" | xargs)
   AVAILABILITY_ZONE_1=$(echo "${10}" | xargs)
   AVAILABILITY_ZONE_2=$(echo "${11}" | xargs)
   IAM_PROFILE_NAME=$(echo "${20}" | xargs)
@@ -28,7 +28,7 @@ else
   echo $SUBNET2B
 
   # Convert the user-data file to a base64 string without line breaks
-  BASECONVERT=$(base64 -w 0 < $USER_DATA_FILE)
+   BASECONVERT=$(base64 -w 0 < "${6}" | tr -d '\n\r')
 
   JSON="{
       \"NetworkInterfaces\": [
