@@ -108,23 +108,26 @@ aws autoscaling create-auto-scaling-group \
     --tags Key=Name,Value="${TAG_VALUE}"
 
 # Tag EC2 Instances
+echo "Tagging EC2 instances with '${TAG_VALUE}'..."
 EC2IDS=$(aws ec2 describe-instances \
     --filters "Name=instance-state-name,Values=pending,running" \
     --output=text \
     --query='Reservations[*].Instances[*].InstanceId')
 
-if [ -n "$EC2IDS" ]; then
-    echo "Tagging EC2 instances with '${TAG_VALUE}'..."
+if [ "$EC2IDS" != "" ]; then
     aws ec2 create-tags --resources $EC2IDS --tags Key=Name,Value=${TAG_VALUE}
     echo "Tagged EC2 Instances: $EC2IDS"
+else
+    echo "No EC2 instances found to tag."
+fi
 
-    # Wait for instances to be running
+# Wait for instances to be running
+if [ "$EC2IDS" != "" ]; then
     echo "Waiting for EC2 instances to be in running state..."
     aws ec2 wait instance-running --instance-ids $EC2IDS
     echo "Instances are up and running!"
 else
-    # No EC2 instances found
-    echo "No EC2 instances found to tag or wait for."
+    echo "No EC2 instances found to wait for."
 fi
 
 # Create S3 buckets
