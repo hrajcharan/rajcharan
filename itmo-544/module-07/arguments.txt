@@ -4,7 +4,7 @@ itmo-544-2024
 sg-0dddd670614115c9a
 1
 install-env.sh
-us-east2a
+us-east-2a
 rc-elb
 rc-tg
 us-east-2a
