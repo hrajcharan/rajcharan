@@ -44,16 +44,16 @@ sudo npm install pm2 -g
 # So we can serve the provided index.html not the default "welcome to Nginx"
 
 # Change URL to your private repo
-sudo -u ubuntu git clone git@github.com:illinoistech-itm/dchadaram.git
+sudo -u ubuntu git clone git@github.com:illinoistech-itm/rharidasu.git
 
-sudo cp /home/ubuntu/dchadaram/ITMO544/module-08/default /etc/nginx/sites-available/default
+sudo cp /home/ubuntu/rharidasu/itmo-544/module-09/default /etc/nginx/sites-available/default
 sudo systemctl daemon-reload
 sudo systemctl restart nginx
 
 # cd command to the directory containing app.js
 # WARNING!!! This is the path in my GitHub Repo - yours could be different
 # Please adjust accordingly - There be Dragons!
-cd /home/ubuntu/dchadaram/ITMO544/module-08/
+cd /home/ubuntu/rharidasu/itmo-544/module-09/
 
 # Used to auto start the app.js nodejs application at deploy time
 sudo pm2 start app.js
