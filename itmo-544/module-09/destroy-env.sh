@@ -66,6 +66,15 @@ aws ec2 delete-launch-template --launch-template-name "$LTNAME"
 echo "$LTNAME launch template was deleted!"
 
 
+# Delete RDS instances
+echo "Deleting RDS instances..."
+RDSINSTANCES=$(aws rds describe-db-instances --output=text --query='DBInstances[*].DBInstanceIdentifier')
+for DB_INSTANCE in $RDSINSTANCES; do
+    aws rds delete-db-instance --db-instance-identifier "$DB_INSTANCE" --skip-final-snapshot
+    aws rds wait db-instance-deleted --db-instance-identifier "$DB_INSTANCE"
+done
+
+
 # Retrieve and delete RDS subnet group
 RDS_SUBNET_GROUP_NAMES=$(aws rds describe-db-subnet-groups --output=text --query='DBSubnetGroups[*].DBSubnetGroupName' | tr -d '\r' | awk '{$1=$1;print}')
 
@@ -85,13 +94,6 @@ else
 fi
 
 
-# Delete RDS instances
-echo "Deleting RDS instances..."
-RDSINSTANCES=$(aws rds describe-db-instances --output=text --query='DBInstances[*].DBInstanceIdentifier')
-for DB_INSTANCE in $RDSINSTANCES; do
-    aws rds delete-db-instance --db-instance-identifier "$DB_INSTANCE" --skip-final-snapshot
-    aws rds wait db-instance-deleted --db-instance-identifier "$DB_INSTANCE"
-done
 
 
 
