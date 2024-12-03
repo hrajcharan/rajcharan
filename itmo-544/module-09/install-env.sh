@@ -46,6 +46,8 @@ sudo npm install pm2 -g
 # Change URL to your private repo
 sudo -u ubuntu git clone git@github.com:illinoistech-itm/rharidasu.git
 
+sudo cp /home/ubuntu/rharidasu/itmo-544/module-09/index.html /var/www/html
+sudo cp /home/ubuntu/rharidasu/itmo-544/module-09/app.js /var/www/html
 sudo cp /home/ubuntu/rharidasu/itmo-544/module-09/default /etc/nginx/sites-available/default
 sudo systemctl daemon-reload
 sudo systemctl restart nginx
