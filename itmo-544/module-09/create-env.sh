@@ -38,6 +38,7 @@ aws ec2 create-launch-template \
     --version-description version1 \
     --launch-template-data file://config.json
 
+
 echo "Creating load balancer '${ELB_NAME}'..."
 aws elbv2 create-load-balancer \
     --name ${ELB_NAME} \
@@ -173,4 +174,5 @@ aws sns subscribe \
 echo "Subscription request sent to ${SNS_SUB_EMAIL}. Please check your email for confirmation."
 
 echo "Printing DNS name of the load balancer..."
-DNSNAME=$(aws elbv
+DNSNAME=$(aws elbv2 describe-load-balancers --names ${ELB_NAME} --output=text --query='LoadBalancers[*].DNSName')
+echo "DNS URL: http://$DNSNAME"
