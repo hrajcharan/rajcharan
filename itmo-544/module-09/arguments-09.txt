@@ -10,7 +10,7 @@ rc-tg
 us-east-2a
 us-east-2b
 us-east-2c
-module-06
+module-09
 rc-arg
 rc-lt
 2
