@@ -2,25 +2,29 @@
 
 # Create ELB, RDS instance, Auto Scaling Group (ASG), and other resources
 
-# ${1} image-id
-# ${2} instance-type
-# ${3} key-name
-# ${4} security-group-ids
-# ${5} count
-# ${6} user-data file name
-# ${7} availability-zone
-# ${8} elb name
-# ${9} target group name
+# ${1} ami-085f9c64a9b75eed5
+# ${2} t2.micro
+# ${3} itmo-544-2024
+# ${4} sg-0c7709a929dbfbb4d
+# ${5} 3
+# ${6} install-env.sh
+# ${7} us-east-2a
+# ${8} jrh-elb
+# ${9} jrh-tg
 # ${10} us-east-2a
 # ${11} us-east-2b
 # ${12} us-east-2c
-# ${13} tag value (e.g., module-06)
+# ${13} module-08
 # ${14} asg name
-# ${15} launch template name
+# ${15} launch-template name
 # ${16} asg min
 # ${17} asg max
 # ${18} asg desired
-# ${19} rds database name
+# ${19} RDS Database Instance Identifier
+# ${20} IAM Instance Profile Name
+# ${21} S3 Bucket Raw
+# ${22} S3 Bucket Finished
+
 
 echo "Finding and storing the subnet IDs for the defined Availability Zones..."
 SUBNET2A=$(aws ec2 describe-subnets --output=text --query='Subnets[*].SubnetId' --filter "Name=availability-zone,Values=${10}")
@@ -33,6 +37,7 @@ aws ec2 create-launch-template \
     --launch-template-name ${15} \
     --version-description version1 \
     --launch-template-data file://config.json
+
 
 echo "Creating load balancer '${8}'..."
 aws elbv2 create-load-balancer \
@@ -81,27 +86,34 @@ aws autoscaling create-auto-scaling-group \
     --tags Key=Name,Value="${13}"
 
 # Tag EC2 Instances
-echo "Tagging EC2 instances with '${13}'..."
 EC2IDS=$(aws ec2 describe-instances \
     --filters "Name=instance-state-name,Values=pending,running" \
     --output=text \
     --query='Reservations[*].Instances[*].InstanceId')
 
-if [ "$EC2IDS" != "" ]; then
+if [ -n "$EC2IDS" ]; then
+    echo "Tagging EC2 instances with '${13}'..."
     aws ec2 create-tags --resources $EC2IDS --tags Key=Name,Value=${13}
     echo "Tagged EC2 Instances: $EC2IDS"
-else
-    echo "No EC2 instances found to tag."
-fi
 
-# Wait for instances to be running
-if [ "$EC2IDS" != "" ]; then
+    # Wait for instances to be running
     echo "Waiting for EC2 instances to be in running state..."
     aws ec2 wait instance-running --instance-ids $EC2IDS
     echo "Instances are up and running!"
 else
-    echo "No EC2 instances found to wait for."
+    # No EC2 instances found
+    echo "No EC2 instances found to tag or wait for."
 fi
+
+
+
+# Create S3 buckets
+aws s3api create-bucket --bucket ${21} --region us-east-2 --create-bucket-configuration LocationConstraint=us-east-2
+aws s3api create-bucket --bucket ${22} --region us-east-2 --create-bucket-configuration LocationConstraint=us-east-2
+echo "S3 buckets '${21}' and '${22}' created."
+
+
+
 
 # Create RDS subnet group
 echo "Creating RDS subnet group..."
@@ -112,26 +124,26 @@ aws rds create-db-subnet-group \
     --tags Key=Name,Value=${13}
 echo "Created RDS subnet group '${19}-subnet-group'."
 
-# Create RDS instance
-echo "Creating RDS primary instance '${19}'..."
-aws rds create-db-instance \
+# Create RDS instance from snapshot
+echo "Creating RDS instance '${19}' from snapshot 'module06fullschemasnapshot'..."
+aws rds restore-db-instance-from-db-snapshot \
     --db-instance-identifier "${19}" \
-    --db-instance-class db.t3.micro \
-    --engine mysql \
-    --allocated-storage 20 \
-    --db-subnet-group-name ${19}-subnet-group \
-    --vpc-security-group-ids ${4} \
-    --master-username controller \
-    --manage-master-user-password \
-    --tags Key=Name,Value=${13}
-echo "Created RDS primary instance '${19}'."
+    --db-snapshot-identifier "module06fullschemasnapshot" \
+    --vpc-security-group-ids sg-04d74d95a88ed4a91 \
+    --db-subnet-group-name "${19}-subnet-group" \
+    --tags Key=Name,Value="${13}"
+echo "Created RDS instance '${19}' from snapshot."
 
-# Wait for the primary RDS instance to be available
+# Wait for the RDS instance to be available
 echo "Waiting for RDS instance '${19}' to become available..."
 aws rds wait db-instance-available --db-instance-identifier "${19}"
-echo "RDS primary instance '${19}' is now available."
+echo "RDS instance '${19}' is now available."
+
 
 
 echo "Printing DNS name of the load balancer..."
 DNSNAME=$(aws elbv2 describe-load-balancers --names ${8} --output=text --query='LoadBalancers[*].DNSName')
 echo "DNS URL: http://$DNSNAME"
+
+
+

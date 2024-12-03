@@ -3,11 +3,12 @@ from tqdm import tqdm
 import requests
 import time
 
-# Initialize boto3 clients for EC2, ELB, RDS, and Secrets Manager
+# Initialize boto3 clients for EC2, ELB, RDS, S3, and Secrets Manager
 clientEC2 = boto3.client('ec2')
 clientELB = boto3.client('elbv2')
 clientRDS = boto3.client('rds')
 clientSecrets = boto3.client('secretsmanager')
+clientS3 = boto3.client('s3')
 
 grandtotal = 0
 totalPoints = 5
@@ -22,22 +23,22 @@ def read_arguments(file_path):
         args = file.read().splitlines()
     return args
 
-# Check for the existence of two RDS instances
+# Check for the existence of one RDS instance
 def check_rds_instances(expected_count):
     try:
         response = clientRDS.describe_db_instances()
         instances = response['DBInstances']
-        if len(instances) >= expected_count:
-            print(f"Found {len(instances)} RDS instances.")
+        if len(instances) == expected_count:
+            print(f"Found {len(instances)} RDS instance(s).")
             return True
         else:
-            print(f"Found only {len(instances)} RDS instances, expected at least {expected_count}.")
+            print(f"Found {len(instances)} RDS instance(s), expected {expected_count}.")
             return False
     except Exception as e:
         print(f"Error checking RDS instances: {e}")
         return False
 
-# Check for the existence of the module-06 tag for RDS instance
+# Check for the existence of the module-07 tag for the RDS instance
 def check_rds_tag(tag_key, tag_value):
     try:
         response = clientRDS.describe_db_instances()
@@ -53,13 +54,13 @@ def check_rds_tag(tag_key, tag_value):
         print(f"Error checking RDS tags: {e}")
         return False
 
-# Check for the existence of any Secrets in Secrets Manager
-def check_any_secrets_exists():
+# Check for the existence of one Secret in Secrets Manager
+def check_any_secret_exists():
     try:
         response = clientSecrets.list_secrets()
         secrets = response['SecretList']
-        if secrets:
-            print(f"Secrets exist in Secrets Manager: {len(secrets)} found.")
+        if len(secrets) >= 1:
+            print(f"Found {len(secrets)} secrets in Secrets Manager.")
             return True
         else:
             print("No secrets found in Secrets Manager.")
@@ -68,19 +69,19 @@ def check_any_secrets_exists():
         print(f"Error checking Secrets Manager: {e}")
         return False
 
-# Check for the existence of three EC2 instances tagged with module-06
-def check_ec2_instances(tag_key, tag_value, expected_count):
+# Check for the existence of two S3 buckets
+def check_s3_buckets(expected_count):
     try:
-        response = clientEC2.describe_instances(Filters=[{'Name': f'tag:{tag_key}', 'Values': [tag_value]}])
-        instances = [instance for reservation in response['Reservations'] for instance in reservation['Instances']]
-        if len(instances) >= expected_count:
-            print(f"Found {len(instances)} EC2 instances with tag {tag_key}: {tag_value}.")
+        response = clientS3.list_buckets()
+        buckets = response['Buckets']
+        if len(buckets) >= expected_count:
+            print(f"Found {len(buckets)} S3 bucket(s).")
             return True
         else:
-            print(f"Found only {len(instances)} EC2 instances with tag {tag_key}: {tag_value}, expected at least {expected_count}.")
+            print(f"Found only {len(buckets)} S3 buckets, expected at least {expected_count}.")
             return False
     except Exception as e:
-        print(f"Error checking EC2 instances: {e}")
+        print(f"Error checking S3 buckets: {e}")
         return False
 
 # Check HTTP status of ELB URL
@@ -101,7 +102,7 @@ def check_http_status(dns_name):
         return False
 
 # Read the arguments from the file 'arguments.txt'
-args = read_arguments('arguments06.txt')
+args = read_arguments('arguments.txt')
 
 # Mapping file arguments to respective variables
 ami_id = args[0]
@@ -122,7 +123,10 @@ launch_template_name = args[14]
 asg_min = args[15]
 asg_max = args[16]
 asg_desired = args[17]
-rds_db_name=args[18]
+rds_db_name = args[18]
+IAM_Instance_Profile_Name=args[19]
+S3_Bucket_Raw=args[20]
+S3_Bucket_Finished=args[21]
 
 # Begin Grading Process
 
@@ -131,18 +135,18 @@ if check_rds_instances(expected_count=1):
     grandtotal += 1
 currentPoints()
 
-# Test 2: Check for the existence of the module-06 tag for RDS instances
-if check_rds_tag('Name', 'module-06'):
+# Test 2: Check for the existence of the module-07 tag for the RDS instance
+if check_rds_tag('Name', 'module-07'):
     grandtotal += 1
 currentPoints()
 
-# Test 3: Check for the existence of any secrets in Secrets Manager
-if check_any_secrets_exists():
+# Test 3: Check for the existence of one secret in Secrets Manager
+if check_any_secret_exists():
     grandtotal += 1
 currentPoints()
 
-# Test 4: Check for the existence of three EC2 instances tagged with module-06
-if check_ec2_instances('Name', 'module-06', expected_count=3):
+# Test 4: Check for the existence of two S3 buckets
+if check_s3_buckets(expected_count=2):
     grandtotal += 1
 currentPoints()
 

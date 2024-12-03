@@ -126,4 +126,3 @@ for j in "${MYS3BUCKETS_ARRAY[@]}"; do
     echo "Bucket $j deleted."
 done
 echo "All S3 buckets deleted!"
-

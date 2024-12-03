@@ -65,21 +65,47 @@ echo "*****************************************************************"
 aws ec2 delete-launch-template --launch-template-name "$LTNAME"
 echo "$LTNAME launch template was deleted!"
 
+# Delete RDS instances
+echo "Deleting RDS instances..."
+RDSINSTANCES=$(aws rds describe-db-instances --output=text --query='DBInstances[*].DBInstanceIdentifier')
+for DB_INSTANCE in $RDSINSTANCES; do
+    aws rds delete-db-instance --db-instance-identifier "$DB_INSTANCE" --skip-final-snapshot
+    aws rds wait db-instance-deleted --db-instance-identifier "$DB_INSTANCE"
+done
+
 # Retrieve and delete RDS subnet group
-RDS_SUBNET_GROUP_NAME=$(aws rds describe-db-subnet-groups --output=text --query='DBSubnetGroups[*].DBSubnetGroupName')
-if [ -n "$RDS_SUBNET_GROUP_NAME" ]; then
-    echo "Deleting RDS subnet group: $RDS_SUBNET_GROUP_NAME..."
-    aws rds delete-db-subnet-group --db-subnet-group-name "$RDS_SUBNET_GROUP_NAME"
-    echo "RDS subnet group deleted!"
+RDS_SUBNET_GROUP_NAMES=$(aws rds describe-db-subnet-groups --output=text --query='DBSubnetGroups[*].DBSubnetGroupName' | tr -d '\r' | awk '{$1=$1;print}')
+
+if [ -n "$RDS_SUBNET_GROUP_NAMES" ]; then
+    echo "Found RDS subnet groups: $RDS_SUBNET_GROUP_NAMES"
+    for SUBNET_GROUP in $RDS_SUBNET_GROUP_NAMES; do
+        echo "Attempting to delete RDS subnet group: $SUBNET_GROUP..."
+        aws rds delete-db-subnet-group --db-subnet-group-name "$SUBNET_GROUP"
+        if [ $? -eq 0 ]; then
+            echo "RDS subnet group deleted: $SUBNET_GROUP"
+        else
+            echo "Failed to delete RDS subnet group: $SUBNET_GROUP"
+        fi
+    done
 else
     echo "No RDS subnet groups found to delete."
 fi
 
-# Retrieve and delete RDS instances
-RDSINSTANCES=$(aws rds describe-db-instances --output=text --query='DBInstances[*].DBInstanceIdentifier')
-for DB_INSTANCE in $RDSINSTANCES; do
-    echo "Deleting RDS instance: $DB_INSTANCE..."
-    aws rds delete-db-instance --db-instance-identifier "$DB_INSTANCE" --skip-final-snapshot
-done
-echo "RDS instances deleted!"
+# Delete S3 buckets and contents
+echo "Deleting S3 buckets and their contents..."
+MYS3BUCKETS=$(aws s3api list-buckets --query "Buckets[*].Name" --output=text)
+MYS3BUCKETS_ARRAY=($MYS3BUCKETS)
 
+for j in "${MYS3BUCKETS_ARRAY[@]}"; do
+    echo "Processing bucket: $j"
+    MYKEYS=$(aws s3api list-objects --bucket "$j" --query 'Contents[*].Key' --output=text)
+    MYKEYS_ARRAY=($MYKEYS)
+    for k in "${MYKEYS_ARRAY[@]}"; do
+        aws s3api delete-object --bucket "$j" --key "$k"
+        aws s3api wait object-not-exists --bucket "$j" --key "$k"
+    done
+    aws s3api delete-bucket --bucket "$j" --region us-east-1
+    aws s3api wait bucket-not-exists --bucket "$j"
+    echo "Bucket $j deleted."
+done
+echo "All S3 buckets deleted!"

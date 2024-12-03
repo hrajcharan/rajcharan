@@ -6,6 +6,7 @@ clientEC2 = boto3.client('ec2')
 clientELB = boto3.client('elbv2')
 clientASG = boto3.client('autoscaling')
 clientRDS = boto3.client('rds')
+clientS3 = boto3.client('s3')
 
 grandtotal = 0
 totalPoints = 5
@@ -34,18 +35,18 @@ def check_launch_templates():
         print(f"Error checking Launch Templates: {e}")
         return False
 
-# Check for the existence of zero Auto Scaling Groups
-def check_auto_scaling_groups():
+# Check for the existence of zero S3 Buckets
+def check_s3_buckets():
     try:
-        response = clientASG.describe_auto_scaling_groups()
-        if not response['AutoScalingGroups']:
-            print("No Auto Scaling Groups exist.")
+        response = clientS3.list_buckets()
+        if not response['Buckets']:
+            print("No S3 Buckets exist.")
             return True
         else:
-            print(f"Auto Scaling Groups exist: {len(response['AutoScalingGroups'])}")
+            print(f"S3 Buckets exist: {len(response['Buckets'])}")
             return False
     except Exception as e:
-        print(f"Error checking Auto Scaling Groups: {e}")
+        print(f"Error checking S3 Buckets: {e}")
         return False
 
 # Check for the existence of zero Elastic Load Balancers (ELBs)
@@ -93,7 +94,7 @@ def check_rds_instances():
         return False
 
 # Read the arguments from the file 'arguments.txt'
-args = read_arguments('arguments06.txt')
+args = read_arguments('arguments.txt')
 
 # Begin Grading Process
 
@@ -102,8 +103,8 @@ if check_launch_templates():
     grandtotal += 1
 currentPoints()
 
-# Test 2: Check Auto Scaling Groups
-if check_auto_scaling_groups():
+# Test 2: Check S3 Buckets
+if check_s3_buckets():
     grandtotal += 1
 currentPoints()
 
@@ -124,5 +125,3 @@ currentPoints()
 
 # Final Score
 print(f"Final Score: {grandtotal} out of {totalPoints}")
-
-
