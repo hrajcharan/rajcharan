@@ -142,7 +142,7 @@ echo "Creating RDS instance '${RDS_DB_NAME}' from snapshot 'module06fullschemasn
 aws rds restore-db-instance-from-db-snapshot \
     --db-instance-identifier "${RDS_DB_NAME}" \
     --db-snapshot-identifier "module06fullschemasnapshot" \
-    --vpc-security-group-ids sg-04d74d95a88ed4a91 \
+    --vpc-security-group-ids sg-0dddd670614115c9a \
     --db-subnet-group-name "${RDS_DB_NAME}-subnet-group" \
     --tags Key=Name,Value="${TAG_VALUE}"
 echo "Created RDS instance '${RDS_DB_NAME}' from snapshot."
