@@ -2,69 +2,66 @@
 
 ltconfigfile="./config.json"
 
-if [ -a $ltconfigfile ]
-then
-  echo "You have already created the launch-tempalte-data file ./config.json..."
+if [ -a $ltconfigfile ]; then
+  echo "You have already created the launch-template-data file ./config.json..."
   exit 1
-elif [ $# = 0 ]
-  then
-  echo "You don't have enough variables in your arugments.txt, perhaps you forgot to run: bash ./create-lt-json.sh \$(< ~/arguments.txt)"
+elif [ $# = 0 ]; then
+  echo "You don't have enough variables in your arguments.txt, perhaps you forgot to run: bash ./create-lt-json.sh \$(< ~/arguments.txt)"
   exit 1
 else
-echo 'Creating lauch template data file ./config.json...'
+  echo 'Creating launch template data file ./config.json...'
 
-echo "Finding and storing the subnet IDs for defined in arguments.txt Availability Zone 1 and 2..."
-SUBNET2A=$(aws ec2 describe-subnets --output=text --query='Subnets[*].SubnetId' --filter "Name=availability-zone,Values=${10}")
-SUBNET2B=$(aws ec2 describe-subnets --output=text --query='Subnets[*].SubnetId' --filter "Name=availability-zone,Values=${11}")
-echo $SUBNET2A
-echo $SUBNET2B
+  # Trim spaces for all arguments
+  for i in "$@"; do
+    trimmed_args+=( "${i// /}" )
+  done
 
-# Create Launch Template
-# Now under EC2 not auto-scaling groups
-# https://awscli.amazonaws.com/v2/documentation/api/latest/reference/ec2/create-launch-template.html
-# Need to convert the user-data file to a base64 string
-# https://en.wikipedia.org/wiki/Base64
-# https://stackoverflow.com/questions/38578528/base64-encoding-new-line
-# base64 will line wrap after 76 characters -- causing the aws ec2 create-launch-template to break
-# the -w 0 options will stop the line break from happening in the base64 output
+  # Assign trimmed variables
+  IMAGE_ID="${trimmed_args[0]}"
+  INSTANCE_TYPE="${trimmed_args[1]}"
+  KEY_NAME="${trimmed_args[2]}"
+  SECURITY_GROUP="${trimmed_args[3]}"
+  USER_DATA="${trimmed_args[5]}"
+  AVAIL_ZONE1="${trimmed_args[9]}"
+  AVAIL_ZONE2="${trimmed_args[10]}"
+  IAM_ROLE="${trimmed_args[19]}"
 
-BASECONVERT=$(base64 -w 0 < ${6})
+  echo "Finding and storing the subnet IDs for Availability Zone 1 and 2..."
+  SUBNET2A=$(aws ec2 describe-subnets --output=text --query='Subnets[*].SubnetId' --filter "Name=availability-zone,Values=$AVAIL_ZONE1")
+  SUBNET2B=$(aws ec2 describe-subnets --output=text --query='Subnets[*].SubnetId' --filter "Name=availability-zone,Values=$AVAIL_ZONE2")
+  echo $SUBNET2A
+  echo $SUBNET2B
 
-# This is the JSON object that is passed to the create template in a more readable form
-# We will save it to a variable here named JSON
-# Then write it out to a file -- and then attach it to the --launch-template-data option
-# Otherwise we are running into issues with the dynamic bash variables
-# Add BlockDeviceMappings for adding additional EBS store to each EC2 instance
-# Add IAM profile to EC2 instances to allow S3 communication
-# https://awscli.amazonaws.com/v2/documentation/api/latest/reference/ec2/create-launch-template.html#examples
+  # Convert user-data file to a base64 string
+  BASECONVERT=$(base64 -w 0 < "$USER_DATA")
 
-JSON="{
-    \"NetworkInterfaces\": [
-        {
-            \"DeviceIndex\": 0,
-            \"AssociatePublicIpAddress\": true,
-            \"Groups\": [
-                \"${4}\"
-            ],
-            \"SubnetId\": \"$SUBNET2A\",
-            \"DeleteOnTermination\": true
-        }
-    ],
-    \"ImageId\": \"${1}\",
-    \"IamInstanceProfile\" : {
-      \"Name\": \"${20}\"
-    }, 
-    \"InstanceType\": \"${2}\",
-    \"KeyName\": \"${3}\",
-    \"UserData\": \"$BASECONVERT\",
-    \"Placement\": {
-        \"AvailabilityZone\": \"${10}\"
-    }
-}"
+  # Create JSON configuration
+  JSON="{
+      \"NetworkInterfaces\": [
+          {
+              \"DeviceIndex\": 0,
+              \"AssociatePublicIpAddress\": true,
+              \"Groups\": [
+                  \"$SECURITY_GROUP\"
+              ],
+              \"SubnetId\": \"$SUBNET2A\",
+              \"DeleteOnTermination\": true
+          }
+      ],
+      \"ImageId\": \"$IMAGE_ID\",
+      \"IamInstanceProfile\" : {
+        \"Name\": \"$IAM_ROLE\"
+      }, 
+      \"InstanceType\": \"$INSTANCE_TYPE\",
+      \"KeyName\": \"$KEY_NAME\",
+      \"UserData\": \"$BASECONVERT\",
+      \"Placement\": {
+          \"AvailabilityZone\": \"$AVAIL_ZONE1\"
+      }
+  }"
 
-#,\"TagSpecifications\":[{\"ResourceType\":\"instance\",\"Tags\":[{\"Key\":\"module\",\"Value\": \"${7}\" }]}]
-# Redirecting the content of our JSON to a file
-echo $JSON > ./config.json
+  # Redirect JSON to file
+  echo $JSON > ./config.json
 
-# End of main IF
+  echo "Launch template data file ./config.json created successfully!"
 fi
