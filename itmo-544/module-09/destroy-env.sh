@@ -72,7 +72,7 @@ if [ -n "$RDS_SUBNET_GROUP_NAME" ]; then
     echo "Deleting RDS subnet group: $RDS_SUBNET_GROUP_NAME..."
     # Delete the RDS subnet group
     aws rds delete-db-subnet-group --db-subnet-group-name "$RDS_SUBNET_GROUP_NAME"
-
+fi
 
 
 
