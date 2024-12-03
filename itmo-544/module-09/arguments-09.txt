@@ -21,3 +21,4 @@ rc-role
 rc-raw-bucket
 rc-finished-bucket
 rc-sns
+rharidasu@hawk.iit.edu
