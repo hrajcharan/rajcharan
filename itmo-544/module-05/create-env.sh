@@ -104,6 +104,9 @@ EC2IDS=$(aws ec2 describe-instances \
     --output=text \
     --query='Reservations[*].Instances[*].InstanceId')
 
+EC2IDS=$(echo "$EC2IDS" | tr -d '\n\r' | xargs)
+echo "EC2IDS: '$EC2IDS'"
+
 if [ "$EC2IDS" != "" ]; then
     aws ec2 create-tags --resources $EC2IDS --tags Key=Name,Value=${13}
     echo "Tagged EC2 Instances: $EC2IDS"
