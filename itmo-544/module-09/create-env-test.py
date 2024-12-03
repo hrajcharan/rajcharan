@@ -114,7 +114,7 @@ def check_http_status(dns_name):
         return False
 
 # Read the arguments from the file 'arguments.txt'
-args = read_arguments('arguments.txt')
+args = read_arguments('arguments-09.txt')
 
 # Mapping file arguments to respective variables
 ami_id = args[0]

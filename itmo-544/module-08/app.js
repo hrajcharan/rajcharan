@@ -48,7 +48,7 @@ const s3 = new S3Client({ region: REGION });
 // Using the AWS JavaScript SDK
 ///////////////////////////////////////////////////////////////////////////
 // Dynamically change to your bucket name
-var bucketName = 'jrh-raw-bucket';
+var bucketName = 'rc-raw-bucket';
 //listBuckets().then(result =>{bucketName = result;}).catch(err=>{console.error("listBuckets function call failed.")});
 	var upload = multer({
         storage: multerS3({
