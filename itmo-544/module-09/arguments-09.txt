@@ -1,4 +1,4 @@
-ami-085f9c64a9b75eed5
+ami-0990b62561ff28a8d
 t2.micro
 itmo-544-2024
 sg-0dddd670614115c9a
