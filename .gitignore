@@ -40,4 +40,3 @@ config.default.yml
 *.csv
 target/
 
-arguments.txt
