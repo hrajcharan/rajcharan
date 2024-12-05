@@ -131,8 +131,8 @@ if check_rds_instances(expected_count=1):
     grandtotal += 1
 currentPoints()
 
-# Test 2: Check for the existence of the module-06 tag for RDS instances
-if check_rds_tag('Name', 'module-06'):
+# Test 2: Check for the existence of the module-08 tag for RDS instances
+if check_rds_tag('Name', 'module-08'):
     grandtotal += 1
 currentPoints()
 
@@ -142,7 +142,7 @@ if check_any_secrets_exists():
 currentPoints()
 
 # Test 4: Check for the existence of three EC2 instances tagged with module-06
-if check_ec2_instances('Name', 'module-06', expected_count=3):
+if check_ec2_instances('Name', 'module-08', expected_count=3):
     grandtotal += 1
 currentPoints()
 
