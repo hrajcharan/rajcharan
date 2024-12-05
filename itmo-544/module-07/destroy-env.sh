@@ -54,7 +54,7 @@ echo "Load balancers deleted!"
 
 # Delete the auto-scaling group
 echo "Deleting $ASGNAME autoscaling group..."
-aws autoscaling delete-auto-scaling-group --auto-scaling-group-name $ASGNAME
+aws autoscaling delete-auto-scaling-group --auto-scaling-group-name $ASGNAME --force-delete
 echo "$ASGNAME autoscaling group was deleted!"
 
 # Retrieve and delete the launch template
