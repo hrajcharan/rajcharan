@@ -12,8 +12,8 @@ sudo apt install -y nginx
 sudo -u ubuntu git clone git@github.com:illinoistech-itm/dchadaram.git
 
 # Adjust repo name and path accordingly
-sudo cp rharidasu/ITMO544/module-07/index.html /var/www/html/
-sudo cp rharidasu/ITMO544/module-07/app.js /var/www/html/
+sudo cp /home/ubuntu/rharidasu/itmo-544/module-09/index.html /var/www/html
+sudo cp /home/ubuntu/rharidasu/itmo-544/module-09/app.js /var/www/html
 
 # Restart Nginx to apply changes
 sudo systemctl restart nginx
