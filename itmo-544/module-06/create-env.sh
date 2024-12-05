@@ -110,12 +110,16 @@ aws autoscaling create-auto-scaling-group \
     --desired-capacity ${ASG_DESIRED_CAPACITY} \
     --tags Key=Name,Value="${TAG_VALUE}"
 
+
 # Tag EC2 Instances
 echo "Tagging EC2 instances with '${TAG_VALUE}'..."
 EC2IDS=$(aws ec2 describe-instances \
     --filters "Name=instance-state-name,Values=pending,running" \
     --output=text \
     --query='Reservations[*].Instances[*].InstanceId')
+
+EC2IDS=$(echo "$EC2IDS" | tr -d '\n\r' | xargs)
+echo "EC2IDS: '$EC2IDS'"
 
 if [ "$EC2IDS" != "" ]; then
     aws ec2 create-tags --resources $EC2IDS --tags Key=Name,Value=${TAG_VALUE}
