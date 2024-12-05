@@ -54,9 +54,9 @@ echo "Load balancers deleted!"
 
 # Delete the auto-scaling group
 echo "Deleting $ASGNAME autoscaling group..."
-aws autoscaling suspend-processes --auto-scaling-group-name rc-asg
-aws autoscaling delete-auto-scaling-group --auto-scaling-group-name $ASGNAME
+aws autoscaling delete-auto-scaling-group --auto-scaling-group-name $ASGNAME --force-delete
 echo "$ASGNAME autoscaling group was deleted!"
+
 
 # Retrieve and delete the launch template
 LTNAME=$(aws ec2 describe-launch-templates --output=text --query='LaunchTemplates[*].LaunchTemplateName')
@@ -67,13 +67,14 @@ aws ec2 delete-launch-template --launch-template-name "$LTNAME"
 echo "$LTNAME launch template was deleted!"
 
 
-# Retrieve and delete RDS instances
+# Delete RDS instances
+echo "Deleting RDS instances..."
 RDSINSTANCES=$(aws rds describe-db-instances --output=text --query='DBInstances[*].DBInstanceIdentifier')
 for DB_INSTANCE in $RDSINSTANCES; do
-    echo "Deleting RDS instance: $DB_INSTANCE..."
     aws rds delete-db-instance --db-instance-identifier "$DB_INSTANCE" --skip-final-snapshot
+    aws rds wait db-instance-deleted --db-instance-identifier "$DB_INSTANCE"
 done
-echo "RDS instances deleted!"
+
 
 
 # Retrieve and delete RDS subnet group
