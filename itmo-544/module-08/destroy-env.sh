@@ -54,6 +54,7 @@ echo "Load balancers deleted!"
 
 # Delete the auto-scaling group
 echo "Deleting $ASGNAME autoscaling group..."
+aws autoscaling suspend-processes --auto-scaling-group-name rc-asg
 aws autoscaling delete-auto-scaling-group --auto-scaling-group-name $ASGNAME
 echo "$ASGNAME autoscaling group was deleted!"
 
