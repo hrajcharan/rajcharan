@@ -154,7 +154,6 @@ aws rds restore-db-instance-from-db-snapshot \
     --db-snapshot-identifier "module06fullschemasnapshot" \
     --vpc-security-group-ids sg-0dddd670614115c9a \
     --db-subnet-group-name "${RDS_DB_NAME}-subnet-group" \
-    --manage-master-user-password \
     --tags Key=Name,Value="${TAG_VALUE}"
 echo "Created RDS instance '${RDS_DB_NAME}' from snapshot."
 
@@ -163,6 +162,14 @@ echo "Created RDS instance '${RDS_DB_NAME}' from snapshot."
 echo "Waiting for RDS instance '${RDS_DB_NAME}' to become available..."
 aws rds wait db-instance-available --db-instance-identifier "${RDS_DB_NAME}"
 echo "RDS instance '${RDS_DB_NAME}' is now available."
+
+
+# Modify RDS instance
+aws rds modify-db-instance \
+    --db-instance-identifier ${RDS_DB_NAME} \
+    --manage-master-user-password
+echo "Modified RDS instance '${RDS_DB_NAME}'."
+
 
 echo "Printing DNS name of the load balancer..."
 DNSNAME=$(aws elbv2 describe-load-balancers --names ${ELB_NAME} --output=text --query='LoadBalancers[*].DNSName')
