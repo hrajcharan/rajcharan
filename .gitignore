@@ -37,6 +37,9 @@ id_rsa.pub
 Vagrantfile~
 config.default.yml
 
+.terraform
+.terraform.lock.hcl
+
 *.csv
 target/
 
