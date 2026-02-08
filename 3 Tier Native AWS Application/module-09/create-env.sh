@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Trim newline and carriage return characters
+## Trim newline and carriage return characters
 IMAGE_ID=$(echo "${1}" | tr -d '\n\r')
 INSTANCE_TYPE=$(echo "${2}" | tr -d '\n\r')
 KEY_NAME=$(echo "${3}" | tr -d '\n\r')
