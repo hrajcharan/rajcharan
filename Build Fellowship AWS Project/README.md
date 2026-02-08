@@ -1,7 +1,7 @@
 # GoGreen Insurance – AWS Terraform (Updated)
 
 This repo deploys a 3‑tier architecture meeting the GoGreen requirements:
-- VPC with public/private subnets across 2 AZs, NAT, routing
+- VPC with public/private subnets across 2 AZs, NAT,routing
 - Web tier (ASG, private) behind ALB
 - App tier (ASG, private) with NAT for patching
 - RDS MySQL (Multi‑AZ, **io1 21,000 IOPS** for consistent performance)
